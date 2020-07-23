@@ -8,6 +8,7 @@ requirements:
   skip: false
   conda:
     channels:
+      - bjrn
       - conda-forge
     packages:
       - geopandas
@@ -15,13 +16,12 @@ requirements:
       - statsmodels
       - rioxarray
       - geojson
-  pip:
-    - simplejson
-    - pandarallel
-    - gstools
-    - thredds_crawler
-    - matplotlib
-    - sphinx
-    - sphinx-rtd-theme
-    - sphinxcontrib-napoleon
-post:
+      - simplejson
+      - pandarallel
+      - gstools
+      - thredds_crawler
+      - matplotlib
+      - sphinx_rtd_theme
+      - sphinx
+      - sphinxcontrib-napoleon 
+ 
