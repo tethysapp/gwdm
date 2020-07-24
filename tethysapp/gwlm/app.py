@@ -236,6 +236,21 @@ class Gwlm(TethysAppBase):
                 controller='gwlm.controllers_ajax.measurements_add'
             ),
             UrlMap(
+                name='update-measurements',
+                url='gwlm/update-measurements',
+                controller='gwlm.controllers.update_measurements'
+            ),
+            UrlMap(
+                name='update-measurements-aquifers',
+                url='gwlm/update-measurements/get-aquifers',
+                controller='gwlm.controllers_ajax.get_aquifers'
+            ),
+            UrlMap(
+                name='update-measurements-submit',
+                url='gwlm/update-measurements/submit',
+                controller='gwlm.controllers_ajax.measurements_delete'
+            ),
+            UrlMap(
                 name='add-variable',
                 url='gwlm/add-variable',
                 controller='gwlm.controllers.add_variable'
@@ -260,6 +275,7 @@ class Gwlm(TethysAppBase):
                 url='gwlm/update-variable/update',
                 controller='gwlm.controllers_ajax.variable_update'
             ),
+
         )
 
         return url_maps

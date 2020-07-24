@@ -165,6 +165,8 @@ var LIBRARY_OBJECT = (function() {
                 });
             }}).addTo(map);
 
+        markers.disableClustering();
+
         $('#cluster-toggle').change(function() {
             // this will contain a reference to the checkbox
             if (this.checked) {

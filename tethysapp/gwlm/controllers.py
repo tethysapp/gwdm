@@ -6,7 +6,7 @@ from tethys_sdk.compute import get_scheduler
 from tethys_sdk.gizmos import Button, TextInput, SelectInput
 from tethys_sdk.gizmos import JobsTable, PlotlyView
 
-# from .app import Gwlm as app
+from .app import Gwlm as app
 from .model import Variable
 from .utils import (get_regions,
                     get_aquifers_list,
@@ -21,11 +21,12 @@ from .utils import (get_regions,
                     get_aquifer_select,
                     get_variable_select,
                     thredds_text_gizmo,
+                    get_region_name,
                     get_session_obj)
 from .utils import user_permission_test
 
 # get job manager for the app
-# job_manager = app.get_job_manager()
+job_manager = app.get_job_manager()
 
 
 def home(request):
@@ -94,6 +95,7 @@ def region_map(request):
     info = request.GET
 
     region_id = info.get('region-select')
+    region_name = get_region_name(int(region_id))
     aquifer_select = get_aquifer_select(region_id, aquifer_id=True)
     geoserver_text_input = geoserver_text_gizmo()
     thredds_text_input = thredds_text_gizmo()
@@ -107,7 +109,7 @@ def region_map(request):
     region_text_input = TextInput(display_text='Region',
                                   name='region-text-input',
                                   placeholder=region_id,
-                                  attributes={'value': region_id},
+                                  attributes={'value': region_id, 'region-name': region_name},
                                   classes="hidden")
 
     context = {
@@ -116,7 +118,8 @@ def region_map(request):
         'geoserver_text_input': geoserver_text_input,
         'thredds_text_input': thredds_text_input,
         'select_interpolation': select_interpolation,
-        'region_text_input': region_text_input
+        'region_text_input': region_text_input,
+        'region_name': region_name
     }
 
     return render(request, 'gwlm/region_map.html', context)
@@ -461,6 +464,27 @@ def add_measurements(request):
         'format_text_input': format_text_input
     }
     return render(request, 'gwlm/add_measurements.html', context)
+
+
+@user_passes_test(user_permission_test)
+def update_measurements(request):
+    region_select = get_region_select()
+    aquifer_select = get_aquifer_select(None)
+    variable_select = get_region_variable_select(None)
+    delete_button = Button(display_text='Delete Measurements',
+                           icon='glyphicon glyphicon-minus',
+                           style='danger',
+                           name='submit-delete-measurements',
+                           attributes={'id': 'submit-delete-measurements'},
+                           classes="delete")
+
+    context = {
+        'region_select': region_select,
+        'aquifer_select': aquifer_select,
+        'variable_select': variable_select,
+        'delete_button': delete_button
+    }
+    return render(request, 'gwlm/update_measurements.html', context)
 
 
 @user_passes_test(user_permission_test)

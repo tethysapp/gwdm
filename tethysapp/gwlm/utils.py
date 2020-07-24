@@ -66,6 +66,19 @@ def get_regions() -> List:
     return region_list
 
 
+def get_region_name(region_id: int) -> str:
+    """
+    Get Region Name for a given region id
+
+    Returns:
+        Region name string
+    """
+    session = get_session_obj()
+    region_name = session.query(Region.region_name).filter(Region.id == region_id).first()[0]
+    session.close()
+    return region_name
+
+
 def get_region_select():
     """
     Generate Region Select Gizmo
@@ -836,3 +849,35 @@ def get_geoserver_status():
         store_status = 'Not Setup'
         layer_status = 'Not Setup'
     return workspace_status, store_status, layer_status
+
+
+def delete_measurements(region: str, aquifer: str, variable: str):
+
+    response = {}
+    try:
+        region_id = int(region)
+        session = get_session_obj()
+        if aquifer == 'all':
+            aquifers_list = get_region_aquifers_list(region_id)
+            aquifers = [aqf[1] for aqf in aquifers_list]
+        else:
+            aquifers = [int(aquifer)]
+
+        if variable == 'all':
+            variables_list = get_region_variables_list(region_id)
+            variables = [var[1] for var in variables_list]
+        else:
+            variables = [int(variable)]
+
+        measurements_query = (session.query(Measurement)
+                              .join(Well, Measurement.well_id == Well.id)
+                              .filter(Measurement.variable_id.in_(variables),
+                                      Well.aquifer_id.in_(aquifers))
+                              )
+        session.delete(measurements_query)
+        session.commit()
+        session.close()
+        response['success'] = 'success'
+    except Exception as e:
+        response['error'] = str(e)
+    return response

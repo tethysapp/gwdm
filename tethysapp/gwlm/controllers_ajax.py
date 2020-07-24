@@ -17,6 +17,7 @@ from .model import (Region,
                     Variable,
                     Well)
 from .utils import (create_outlier,
+                    delete_measurements,
                     get_session_obj,
                     user_permission_test,
                     process_region_shapefile,
@@ -485,6 +486,18 @@ def measurements_add(request, app_workspace):
         return JsonResponse(response)
 
 
+@user_passes_test(user_permission_test)
+def measurements_delete(request):
+
+    if request.is_ajax() and request.method == 'POST':
+        info = request.POST
+        variable_id = info.get("variable")
+        region_id = info.get("region")
+        aquifer_id = info.get('aquifer')
+        response = delete_measurements(region_id, aquifer_id, variable_id)
+        return JsonResponse(response)
+
+
 def region_timeseries(request):
     """
     Ajax controller to get timeseries for a selected region, well, variable
@@ -510,8 +523,11 @@ def region_well_obs(request):
     if request.is_ajax() and request.method == 'POST':
         info = request.POST
         aquifer_id = int(info.get('aquifer_id'))
-        variable_id = int(info.get('variable_id'))
-        well_obs = get_well_obs(aquifer_id, variable_id)
+        variable_id = info.get('variable_id')
+        if type(variable_id) is int:
+            well_obs = get_well_obs(aquifer_id, int(variable_id))
+        else:
+            well_obs = []
         response['obs_dict'] = well_obs
         if len(well_obs) > 0:
             response['min_obs'] = min(well_obs.values())

@@ -43,12 +43,15 @@
 {% block app_navigation_items %}
 
 {% url 'gwlm:home' as home_url %}
+
 <li class="{% if request.path == home_url %}active{% endif %}"><a href="{{home_url}}">Go Home</a></li>
+<h3>Region Name: {{region_name}}</h3>
+
 {% gizmo aquifer_select %}
 {% gizmo variable_select %}
 {% gizmo select_interpolation %}
 <div>
-  <input type="checkbox" id="cluster-toggle" name="cluster-toggle" checked>
+  <input type="checkbox" id="cluster-toggle" name="cluster-toggle" >
   <label for="cluster-toggle">Cluster Wells</label>
 </div>
 <label>

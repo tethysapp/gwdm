@@ -19,7 +19,7 @@
 {% url 'gwlm:metrics' as metrics_url %}
 {% url 'gwlm:config' as config_url %}
 {% url 'gwlm:interpolation' as interpolation_url %}
-{% url 'gwlm:jobs-table' as jobs_table %}
+<!--{% url 'gwlm:jobs-table' as jobs_table %}-->
 {% url 'gwlm:add-region' as add_region_url %}
 {% url 'gwlm:update-region' as update_region_url %}
 {% url 'gwlm:add-aquifer' as add_aquifer_url %}
@@ -27,6 +27,7 @@
 {% url 'gwlm:add-wells' as add_wells_url %}
 {% url 'gwlm:edit-wells' as edit_wells_url %}
 {% url 'gwlm:add-measurements' as add_measurements_url %}
+{% url 'gwlm:update-measurements' as update_measurements_url %}
 {% url 'gwlm:add-variable' as add_variable_url %}
 {% url 'gwlm:update-variable' as update_variable_url %}
 <br>
@@ -36,7 +37,7 @@
 <li class="title">Configuration</li>
 <li class="{% if request.path == config_url %}active{% endif %}"><a href="{{config_url}}">Configure App</a></li>
 <li class="{% if request.path == interpolation_url %}active{% endif %}"><a href="{{interpolation_url}}">Interpolation Wizard</a></li>
-<li class="{% if request.path == jobs_table %}active{% endif %}"><a href="{{jobs_table}}">Interpolation Jobs Table</a></li>
+<!--<li class="{% if request.path == jobs_table %}active{% endif %}"><a href="{{jobs_table}}">Interpolation Jobs Table</a></li>-->
 <li class="{% if request.path == add_region_url %}active{% endif %}"><a href="{{add_region_url}}">Add Region</a></li>
 <li class="{% if request.path == update_region_url %}active{% endif %}"><a href="{{update_region_url}}">Edit Region</a></li>
 <li class="{% if request.path == add_aquifer_url %}active{% endif %}"><a href="{{add_aquifer_url}}">Add Aquifer</a></li>
@@ -44,6 +45,7 @@
 <li class="{% if request.path == add_wells_url %}active{% endif %}"><a href="{{add_wells_url}}">Add Wells</a></li>
 <li class="{% if request.path == edit_wells_url %}active{% endif %}"><a href="{{edit_wells_url}}">Edit Wells</a></li>
 <li class="{% if request.path == add_measurements_url %}active{% endif %}"><a href="{{add_measurements_url}}">Add Measurements</a></li>
+<li class="{% if request.path == update_measurements_url %}active{% endif %}"><a href="{{update_measurements_url}}">Update Measurements</a></li>
 <li class="{% if request.path == add_variable_url %}active{% endif %}"><a href="{{add_variable_url}}">Add Variable</a></li>
 <li class="{% if request.path == update_variable_url %}active{% endif %}"><a href="{{update_variable_url}}">Update Variable</a></li>
 {% endif%}
