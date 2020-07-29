@@ -35,6 +35,8 @@ var LIBRARY_OBJECT = (function() {
     reset_form = function(result){
         if("success" in result){
             addSuccessMessage('Measurements Successfully Deleted!');
+            $("#aquifer-select").empty().trigger('change');
+            $("#variable-select").empty().trigger('change');
         }
     };
 
@@ -43,11 +45,25 @@ var LIBRARY_OBJECT = (function() {
 
     delete_measurements = function(){
         reset_alert();
+        var region = $("#region-select option:selected").val();
+        var aquifer = $("#aquifer-select option:selected").toArray().map(item => item.value).join();
+        var variable = $("#variable-select option:selected").toArray().map(item => item.value).join();
+
+        if(aquifer === ""){
+            addErrorMessage("Aquifer cannot be empty! Please select an Aquifer.");
+            return false;
+        }else{
+            reset_alert();
+        }
+        if(variable === ""){
+            addErrorMessage("Variable cannot be empty! Please select a Variable.");
+            return false;
+        }else{
+            reset_alert();
+        }
         addInfoMessage("Deleting Measurements. Please wait...","message");
 
-        var region = $("#region-select option:selected").val();
-        var aquifer = $("#aquifer-select option:selected").val();
-        var variable = $("#variable-select option:selected").val();
+
         var submit_data = {'region': region, 'aquifer': aquifer, 'variable': variable}
         var submit_button = $("#submit-delete-measurements");
         var submit_button_html = submit_button.html();
@@ -105,13 +121,15 @@ var LIBRARY_OBJECT = (function() {
                     var var_options = return_data["variables_list"];
                     $("#aquifer-select").html('');
                     $("#variable-select").html('');
-                    var empty_opt = '<option value="" selected disabled>Select item...</option>';
-                    var var_empty_opt = '<option value="" selected disabled>Select item...</option>';
+                    $("#variable-select").select2({'multiple': true,  placeholder: "Select a Variable(s)"});
+                    $("#aquifer-select").select2({'multiple': true,  placeholder: "Select an Aquifer(s)"});
+                    // var empty_opt = '<option value="" selected disabled>Select item...</option>';
+                    // var var_empty_opt = '<option value="" selected disabled>Select item...</option>';
                     var all_opt = new Option('All Aquifers', 'all');
                     var all_var_opt = new Option('All Variables', 'all');
-                    $("#aquifer-select").append(empty_opt);
+                    // $("#aquifer-select").append(empty_opt);
                     $("#aquifer-select").append(all_opt);
-                    $("#variable-select").append(var_empty_opt);
+                    // $("#variable-select").append(var_empty_opt);
                     $("#variable-select").append(all_var_opt);
                     options.forEach(function(attr,i){
                         var aquifer_option = new Option(attr[0], attr[1]);
@@ -121,11 +139,34 @@ var LIBRARY_OBJECT = (function() {
                         var var_option = new Option(attr[0], attr[1]);
                         $("#variable-select").append(var_option);
                     });
+
                 }else{
                     addErrorMessage(return_data['error']);
                 }
             });
         }).change();
+
+        $("#aquifer-select").on('select2:select select2:unselecting', function(){
+            var selected = $(this).val();
+
+            if(selected != null)
+            {
+                if(selected.indexOf('all')>=0){
+                    $(this).val('all').select2();
+                }
+            }
+        });
+
+        $("#variable-select").on('select2:select select2:unselecting', function(){
+            var selected = $(this).val();
+
+            if(selected != null)
+            {
+                if(selected.indexOf('all')>=0){
+                    $(this).val('all').select2();
+                }
+            }
+        });
     });
 
     return public_interface;

@@ -506,8 +506,11 @@ def region_timeseries(request):
     if request.is_ajax() and request.method == 'POST':
         info = request.POST
         well_id = info.get('well_id')
-        variable_id = int(info.get('variable_id'))
-        timeseries = get_timeseries(well_id, variable_id)
+        variable_id = info.get('variable_id')
+        if variable_id is not None:
+            timeseries = get_timeseries(well_id, int(variable_id))
+        else:
+            timeseries = []
         response['success'] = 'success'
         response['timeseries'] = timeseries
         response['well_info'] = get_well_info(well_id)
@@ -524,7 +527,7 @@ def region_well_obs(request):
         info = request.POST
         aquifer_id = int(info.get('aquifer_id'))
         variable_id = info.get('variable_id')
-        if type(variable_id) is int:
+        if variable_id is not None:
             well_obs = get_well_obs(aquifer_id, int(variable_id))
         else:
             well_obs = []

@@ -52,12 +52,12 @@ def config(request):
                                   name='submit',
                                   attributes={'id': 'submit'},
                                   classes="add")
-    workspace_status, store_status, layer_status = get_geoserver_status()
+    status_dict = get_geoserver_status()
     context = {
         'add_geoserver_config': add_geoserver_config,
-        'workspace_status': workspace_status,
-        'store_status': store_status,
-        'layer_status': layer_status
+        'workspace_status': status_dict['workspace_status'],
+        'store_status': status_dict['store_status'],
+        'layer_status': status_dict['layer_status']
     }
     return render(request, 'gwlm/config.html', context)
 

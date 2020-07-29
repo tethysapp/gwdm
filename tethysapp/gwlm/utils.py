@@ -153,7 +153,7 @@ def get_variable_select() -> Any:
     return variable_select
 
 
-def get_region_variables_list(region_id: int) -> List:
+def get_region_variables_list(region_id: Union[int, None]) -> List:
     """
     Get a list of variables within a given region
 
@@ -798,6 +798,7 @@ def get_wms_datasets(aquifer_name: str, variable_id: str, region_id: str) -> Lis
     aquifer_name = aquifer_name.replace(" ", "_")
     c = Crawl(catalog.catalog_url)
     file_str = f'{region_id}/{aquifer_name}/{aquifer_name}_{variable_id}'
+
     urls = [[s.get("url"), d.name] for d in c.datasets for s in d.services
             if s.get("service").lower() == "wms" and file_str in s.get("url")]
 
@@ -826,7 +827,14 @@ def get_wms_metadata(aquifer_name: str, file_name: str, region_id: str) -> Tuple
     return range_min, range_max
 
 
-def get_geoserver_status():
+def get_geoserver_status() -> dict:
+    """
+    Get GeoServer status in the app. Query using the Tethys gs_config wrapper to check if the workspace, store,
+    and layers exist for the app within the GeoServer.
+
+    Returns:
+        A dict with workspace, store, and layer status
+    """
     gs_engine = app.get_spatial_dataset_service('primary_geoserver', as_engine=True)
     workspaces = gs_engine.list_workspaces()['result']
     ws_name = 'gwlm'
@@ -848,11 +856,25 @@ def get_geoserver_status():
         workspace_status = 'Not Setup'
         store_status = 'Not Setup'
         layer_status = 'Not Setup'
-    return workspace_status, store_status, layer_status
+
+    status = {'workspace_status': workspace_status,
+              'store_status': store_status,
+              'layer_status': layer_status}
+    return status
 
 
-def delete_measurements(region: str, aquifer: str, variable: str):
+def delete_measurements(region: str, aquifer: str, variable: str) -> dict:
+    """
+    Delete measurements from the database for a selected region, aquifer, and variable
 
+    Args:
+        region: Region ID string from ajax request
+        aquifer: Aquifer ID String. options: 'all' or a specific aquifer id
+        variable: Variable ID String. options: 'all' or specific variable id
+
+    Returns:
+        JSON Dictionary indicating whether the operation succeeded
+    """
     response = {}
     try:
         region_id = int(region)
@@ -860,12 +882,16 @@ def delete_measurements(region: str, aquifer: str, variable: str):
         if aquifer == 'all':
             aquifers_list = get_region_aquifers_list(region_id)
             aquifers = [aqf[1] for aqf in aquifers_list]
+        elif ',' in aquifer:
+            aquifers = [int(aqf) for aqf in  aquifer.split(',')]
         else:
             aquifers = [int(aquifer)]
 
         if variable == 'all':
             variables_list = get_region_variables_list(region_id)
             variables = [var[1] for var in variables_list]
+        elif ',' in variable:
+            variables = [int(var) for var in variable.split(',')]
         else:
             variables = [int(variable)]
 
@@ -873,8 +899,11 @@ def delete_measurements(region: str, aquifer: str, variable: str):
                               .join(Well, Measurement.well_id == Well.id)
                               .filter(Measurement.variable_id.in_(variables),
                                       Well.aquifer_id.in_(aquifers))
-                              )
-        session.delete(measurements_query)
+                              ).all()
+        # print(measurements_query.all())
+        # session.delete(measurements_query)
+        for meas in measurements_query:
+            session.delete(meas)
         session.commit()
         session.close()
         response['success'] = 'success'
