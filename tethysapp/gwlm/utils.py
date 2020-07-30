@@ -175,7 +175,9 @@ def get_region_variables_list(region_id: Union[int, None]) -> List:
                      )
         variable_list = [(f'{variable.name}, {variable.units}', variable.id) for variable in variables]
         session.close()
-        return variable_list
+    else:
+        variable_list = []
+    return variable_list
 
 
 def get_metrics() -> Any:
@@ -575,7 +577,7 @@ def process_wells_file(lat: str,
             well = Well(aquifer_id=int(row.aquifer_id),
                         latitude=float(row.latitude),
                         longitude=float(row.longitude),
-                        well_id=row.well_id,
+                        well_id=str(row.well_id),
                         well_name=str(row.well_name),
                         gse=float(row.gse),
                         attr_dict=attr_dict,
@@ -863,6 +865,24 @@ def get_geoserver_status() -> dict:
     return status
 
 
+def get_thredds_status() -> dict:
+    """
+    Get Thredds status in the app. Check if the relevant directory exists.
+
+    Returns:
+        A dict with the thredds groundwater directory status
+    """
+
+    thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+    if os.path.exists(thredds_directory):
+        directory_status = 'Configured'
+    else:
+        directory_status = 'Not Setup'
+
+    status = {'directory_status': directory_status}
+    return status
+
+
 def delete_measurements(region: str, aquifer: str, variable: str) -> dict:
     """
     Delete measurements from the database for a selected region, aquifer, and variable
@@ -883,7 +903,7 @@ def delete_measurements(region: str, aquifer: str, variable: str) -> dict:
             aquifers_list = get_region_aquifers_list(region_id)
             aquifers = [aqf[1] for aqf in aquifers_list]
         elif ',' in aquifer:
-            aquifers = [int(aqf) for aqf in  aquifer.split(',')]
+            aquifers = [int(aqf) for aqf in aquifer.split(',')]
         else:
             aquifers = [int(aquifer)]
 
@@ -910,3 +930,56 @@ def delete_measurements(region: str, aquifer: str, variable: str) -> dict:
     except Exception as e:
         response['error'] = str(e)
     return response
+
+
+def delete_bulk_wells(region: str, aquifer: str) -> dict:
+    """
+    Bulk Delete Wells in an Aquifer
+
+    Args:
+        region: Region ID in the database
+        aquifer: Aquifer ID in the database. options: all or aquifer id
+
+    Returns:
+        JSON response indicating whether the wells were deleted
+    """
+    response = {}
+    try:
+        region_id = int(region)
+        session = get_session_obj()
+        if aquifer == 'all':
+            aquifers_list = get_region_aquifers_list(region_id)
+            aquifers = [aqf[1] for aqf in aquifers_list]
+        elif ',' in aquifer:
+            aquifers = [int(aqf) for aqf in aquifer.split(',')]
+        else:
+            aquifers = [int(aquifer)]
+
+        wells_query = session.query(Well).filter(Well.aquifer_id.in_(aquifers)).all()
+        for well in wells_query:
+            session.delete(well)
+        session.commit()
+        session.close()
+        response['success'] = 'success'
+    except Exception as e:
+        response['error'] = str(e)
+
+    return response
+
+
+def delete_region_thredds_dir(region_id: str) -> str:
+    """
+    Delete the region directory in the Thredds public folder
+
+    Args:
+        region_id: Selected Region Id
+
+    Returns:
+        Success message on region deleted
+    """
+    thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+    region_path = os.path.join(thredds_directory, region_id)
+    if os.path.exists(region_path):
+        shutil.rmtree(region_path)
+        status = 'success'
+        return status

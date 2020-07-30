@@ -206,6 +206,21 @@ class Gwlm(TethysAppBase):
                 controller='gwlm.controllers_ajax.well_delete'
             ),
             UrlMap(
+                name='delete-wells',
+                url='gwlm/delete-wells',
+                controller='gwlm.controllers.delete_wells'
+            ),
+            UrlMap(
+                name='delete-wells-aquifers',
+                url='gwlm/delete-wells/get-aquifers',
+                controller='gwlm.controllers_ajax.get_aquifers'
+            ),
+            UrlMap(
+                name='delete-wells-submit',
+                url='gwlm/delete-wells/submit',
+                controller='gwlm.controllers_ajax.bulk_delete_wells'
+            ),
+            UrlMap(
                 name='add-measurements',
                 url='gwlm/add-measurements',
                 controller='gwlm.controllers.add_measurements'

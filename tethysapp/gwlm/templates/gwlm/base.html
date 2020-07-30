@@ -26,6 +26,7 @@
 {% url 'gwlm:update-aquifer' as update_aquifer_url %}
 {% url 'gwlm:add-wells' as add_wells_url %}
 {% url 'gwlm:edit-wells' as edit_wells_url %}
+{% url 'gwlm:delete-wells' as delete_wells %}
 {% url 'gwlm:add-measurements' as add_measurements_url %}
 {% url 'gwlm:update-measurements' as update_measurements_url %}
 {% url 'gwlm:add-variable' as add_variable_url %}
@@ -44,8 +45,9 @@
 <li class="{% if request.path == update_aquifer_url %}active{% endif %}"><a href="{{update_aquifer_url}}">Edit Aquifer</a></li>
 <li class="{% if request.path == add_wells_url %}active{% endif %}"><a href="{{add_wells_url}}">Add Wells</a></li>
 <li class="{% if request.path == edit_wells_url %}active{% endif %}"><a href="{{edit_wells_url}}">Edit Wells</a></li>
+<li class="{% if request.path == delete_wells %}active{% endif %}"><a href="{{delete_wells}}">Delete Wells by Aquifer</a></li>
 <li class="{% if request.path == add_measurements_url %}active{% endif %}"><a href="{{add_measurements_url}}">Add Measurements</a></li>
-<li class="{% if request.path == update_measurements_url %}active{% endif %}"><a href="{{update_measurements_url}}">Update Measurements</a></li>
+<li class="{% if request.path == update_measurements_url %}active{% endif %}"><a href="{{update_measurements_url}}">Delete Measurements</a></li>
 <li class="{% if request.path == add_variable_url %}active{% endif %}"><a href="{{add_variable_url}}">Add Variable</a></li>
 <li class="{% if request.path == update_variable_url %}active{% endif %}"><a href="{{update_variable_url}}">Update Variable</a></li>
 {% endif%}

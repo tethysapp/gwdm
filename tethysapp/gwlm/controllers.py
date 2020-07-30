@@ -11,6 +11,7 @@ from .model import Variable
 from .utils import (get_regions,
                     get_aquifers_list,
                     get_geoserver_status,
+                    get_thredds_status,
                     get_num_wells,
                     get_num_measurements,
                     get_variable_list,
@@ -52,12 +53,14 @@ def config(request):
                                   name='submit',
                                   attributes={'id': 'submit'},
                                   classes="add")
-    status_dict = get_geoserver_status()
+    geoserver_status = get_geoserver_status()
+    thredds_status = get_thredds_status()
     context = {
         'add_geoserver_config': add_geoserver_config,
-        'workspace_status': status_dict['workspace_status'],
-        'store_status': status_dict['store_status'],
-        'layer_status': status_dict['layer_status']
+        'workspace_status': geoserver_status['workspace_status'],
+        'store_status': geoserver_status['store_status'],
+        'layer_status': geoserver_status['layer_status'],
+        'directory_status': thredds_status['directory_status']
     }
     return render(request, 'gwlm/config.html', context)
 
@@ -435,6 +438,25 @@ def edit_wells(request):
         'geoserver_text_input': geoserver_text_input
     }
     return render(request, 'gwlm/edit_wells.html', context)
+
+
+@user_passes_test(user_permission_test)
+def delete_wells(request):
+    region_select = get_region_select()
+    aquifer_select = get_aquifer_select(None)
+    delete_button = Button(display_text='Delete Wells',
+                           icon='glyphicon glyphicon-minus',
+                           style='danger',
+                           name='submit-delete-wells',
+                           attributes={'id': 'submit-delete-wells'},
+                           classes="delete")
+
+    context = {
+        'region_select': region_select,
+        'aquifer_select': aquifer_select,
+        'delete_button': delete_button
+    }
+    return render(request, 'gwlm/delete_wells.html', context)
 
 
 @user_passes_test(user_permission_test)

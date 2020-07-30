@@ -17,7 +17,9 @@ from .model import (Region,
                     Variable,
                     Well)
 from .utils import (create_outlier,
+                    delete_region_thredds_dir,
                     delete_measurements,
+                    delete_bulk_wells,
                     get_session_obj,
                     user_permission_test,
                     process_region_shapefile,
@@ -135,6 +137,7 @@ def region_delete(request):
             session.delete(region)
             session.commit()
             session.close()
+            delete_region_thredds_dir(region_id)
             return JsonResponse({'success': "Region successfully deleted!"})
         except IntegrityError:
             session.close()
@@ -458,6 +461,17 @@ def well_delete(request):
         except IntegrityError:
             session.close()
             return JsonResponse({'error': "There is a problem with your request."})
+
+
+@user_passes_test(user_permission_test)
+def bulk_delete_wells(request):
+
+    if request.is_ajax() and request.method == 'POST':
+        info = request.POST
+        region_id = info.get("region")
+        aquifer_id = info.get('aquifer')
+        response = delete_bulk_wells(region_id, aquifer_id)
+        return JsonResponse(response)
 
 
 @user_passes_test(user_permission_test)
