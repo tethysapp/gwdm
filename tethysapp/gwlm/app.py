@@ -231,6 +231,11 @@ class Gwlm(TethysAppBase):
                 controller='gwlm.controllers_ajax.get_aquifers'
             ),
             UrlMap(
+                name='add-measurements-date-format',
+                url='gwlm/add-measurements/check-date-format',
+                controller='gwlm.controllers_ajax.validate_date_format'
+            ),
+            UrlMap(
                 name='add-measurements-aquifers',
                 url='gwlm/add-measurements/get-aquifers',
                 controller='gwlm.controllers_ajax.get_aquifers'

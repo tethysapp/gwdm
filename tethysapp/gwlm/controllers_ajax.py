@@ -17,6 +17,7 @@ from .model import (Region,
                     Variable,
                     Well)
 from .utils import (create_outlier,
+                    date_format_validator,
                     delete_region_thredds_dir,
                     delete_measurements,
                     delete_bulk_wells,
@@ -393,6 +394,7 @@ def wells_add(request, app_workspace):
         aquifer_id = info.get('aquifer_id')
         aquifer_col = info.get('aquifer_col')
         region_id = int(info.get('region_id'))
+
         response = process_wells_file(lat, lon, well_id, name,
                                       gse, attributes, file,
                                       aquifer_id, aquifer_col,
@@ -521,7 +523,7 @@ def region_timeseries(request):
         info = request.POST
         well_id = info.get('well_id')
         variable_id = info.get('variable_id')
-        if variable_id is not None:
+        if variable_id != 'undefined':
             timeseries = get_timeseries(well_id, int(variable_id))
         else:
             timeseries = []
@@ -737,3 +739,17 @@ def region_wms_metadata(request):
         # response['wms_files'] = well_files
 
     return JsonResponse(response)
+
+
+def validate_date_format(request):
+    """
+    Ajax controller to validate python date format while adding measurements
+    """
+    response = {}
+    if request.is_ajax() and request.method == 'POST':
+        post_info = request.POST
+        time_format = post_info.get('time_format')
+        is_valid = date_format_validator(time_format)
+        response['success'] = 'success'
+        response['is_valid'] = is_valid
+        return JsonResponse(response)

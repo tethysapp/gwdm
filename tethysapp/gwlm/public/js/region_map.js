@@ -249,7 +249,7 @@ var LIBRARY_OBJECT = (function() {
             var popupString = '<div class="popup">';
             // var well_id = feature.id.split('.')[1];
             // console.log(well_id, well_obs[well_id]);
-            popupString += '<span class="well_id" well-id="'+feature.id+'">'+feature.id+'</span><br/>';
+            popupString += '<span class="well_id" well-id="'+feature.id+'"></span><br/>';
             for (var k in feature.properties) {
                 var v = feature.properties[k];
                 popupString += k + ': ' + v + '<br />';

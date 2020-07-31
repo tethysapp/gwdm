@@ -9,6 +9,7 @@ from typing import List, Any, Dict, Tuple, Union
 
 import geopandas as gpd
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 import simplejson
 import xarray as xr
@@ -556,6 +557,10 @@ def process_wells_file(lat: str,
         if len(aquifer_col) > 0:
             rename_cols[aquifer_col] = 'aquifer_id'
             gdf.rename(columns=rename_cols, inplace=True)
+            if gdf['aquifer_id'].dtypes == np.float64:
+                gdf['aquifer_id'] = gdf['aquifer_id'].astype(int)
+
+            gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
             aquifer_ids = list(gdf['aquifer_id'].unique().astype(str))
             aquifer = (session.query(Aquifer).filter(Aquifer.region_id == region_id,
                                                      Aquifer.aquifer_id.in_(aquifer_ids)).all())
@@ -567,6 +572,10 @@ def process_wells_file(lat: str,
         if attrs:
             attributes = attrs.split(',')
 
+        well_aquifers_list = [int(aqf_id) for aqf_id in gdf['aquifer_id'].unique()]
+        wells_query = (session.query(Well.well_id).filter(Well.aquifer_id.in_(well_aquifers_list)).all())
+        existing_wells = [value for value, in wells_query]
+        gdf = gdf.loc[~gdf['well_id'].isin(existing_wells)]
         for row in gdf.itertuples():
             attr_dict = {}
             if attributes:
@@ -920,8 +929,7 @@ def delete_measurements(region: str, aquifer: str, variable: str) -> dict:
                               .filter(Measurement.variable_id.in_(variables),
                                       Well.aquifer_id.in_(aquifers))
                               ).all()
-        # print(measurements_query.all())
-        # session.delete(measurements_query)
+
         for meas in measurements_query:
             session.delete(meas)
         session.commit()
@@ -983,3 +991,18 @@ def delete_region_thredds_dir(region_id: str) -> str:
         shutil.rmtree(region_path)
         status = 'success'
         return status
+
+
+def date_format_validator(date_format: str) -> bool:
+    test_date = '12-31-1999'
+    try:
+        valid_date = datetime.strptime(test_date, '%m-%d-%Y').strftime(date_format)
+        if valid_date == date_format or len(valid_date) == 0:
+            is_valid = False
+        else:
+            is_valid = True
+    except Exception as e:
+        print(e)
+        is_valid = False
+
+    return is_valid

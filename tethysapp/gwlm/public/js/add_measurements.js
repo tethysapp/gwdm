@@ -225,6 +225,25 @@ var LIBRARY_OBJECT = (function() {
                 }
             });
         }).change();
+
+        $("#format-text-input").focusout(function(){
+            var time_format = $("#format-text-input").val();
+            var xhr = ajax_update_database("check-date-format", {'time_format': time_format});
+            xhr.done(function(return_data){ //Reset the form once the data is added successfully
+                if("success" in return_data){
+                    console.log(return_data);
+                    var is_valid = return_data['is_valid'];
+                    if(is_valid===true){
+                        $('.submit-add-measurements').removeClass('hidden');
+                    }else{
+                        $('.submit-add-measurements').addClass('hidden');
+                    }
+
+                }else{
+                    addErrorMessage(return_data['is_valid']);
+                }
+            });
+        });
     });
 
     return public_interface;
