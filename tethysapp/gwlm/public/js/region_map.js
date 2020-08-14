@@ -21,6 +21,7 @@ var LIBRARY_OBJECT = (function() {
         contourTimeLayer,
         contourGroup,
         $geoserverUrl,
+        geojsonMarkerOptions,
         interpolationGroup,
         layer_control,
         map,
@@ -59,6 +60,7 @@ var LIBRARY_OBJECT = (function() {
         init_dropdown,
         init_map,
         init_slider,
+        markers_style_function,
         original_map_chart,
         resize_map_chart,
         reset_alert,
@@ -129,6 +131,17 @@ var LIBRARY_OBJECT = (function() {
             return legend_div;
         };
         wms_legend.addTo(map);
+
+        var legend = L.control({position: 'topright'});
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info_legend');
+            var labels = ['<strong>Legend</strong>'];
+            labels.push('<span class="bluewell"></span> Regular Wells');
+            labels.push('<span class="redwell"></span> Outlier Wells');
+            div.innerHTML = labels.join('<br>');
+            return div;
+        };
+        legend.addTo(map);
         var timeDimension = new L.TimeDimension();
         map.timeDimension = timeDimension;
 
@@ -167,7 +180,7 @@ var LIBRARY_OBJECT = (function() {
                 return L.divIcon({
                     html: count,
                     className: 'cluster digits-' + digits,
-                    iconSize: null
+                    iconSize: null,
                 });
             }}).addTo(map);
 
@@ -192,6 +205,18 @@ var LIBRARY_OBJECT = (function() {
         };
 
         layer_control = L.control.layers(null, overlay_maps).addTo(map);
+
+        L.easyButton({
+            states: [{
+                stateName: 'region-home',
+                icon: 'glyphicon-home',
+                title: 'Region Home',
+                onClick: function() {
+                    // view_region(region, get_region_aquifers);
+                    location.reload();
+                }
+            }]
+        }).addTo(map);
 
         var min_input = L.control({position: 'topleft'});
         min_input.onAdd = function(map){
@@ -330,9 +355,6 @@ var LIBRARY_OBJECT = (function() {
             dataType : 'jsonp',
             jsonpCallback : 'getJson',
             success : function (response) {
-                // region_aquifers = response
-                console.log(response);
-                // var feature = L.geoJSON(response, {style: myStyle}).addTo(regionGroup);
                 aquiferGroup.clearLayers();
 
                 var all_aquifers = L.geoJSON(response,
@@ -384,7 +406,7 @@ var LIBRARY_OBJECT = (function() {
             jsonpCallback : 'getJson',
             success : function (response) {
                 var myStyle = {
-                    "color": "#2d84c8",
+                    "color": "#0004ff",
                     "weight": 4,
                     "opacity": 1,
                     "fillOpacity": 0
@@ -393,6 +415,28 @@ var LIBRARY_OBJECT = (function() {
                 map.fitBounds(feature.getBounds());
             }
         });
+    };
+
+    markers_style_function = function (feature) {
+        if(feature.properties.outlier===false){
+            return {
+                radius: 6,
+                fillColor: "blue",
+                color: "white",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            };
+        }else{
+            return {
+                radius: 6,
+                fillColor: "red",
+                color: "white",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            };
+        }
     };
 
     view_wells = function(aquifer_id){
@@ -412,6 +456,7 @@ var LIBRARY_OBJECT = (function() {
 
         // aquiferGroup.clearLayers();
         markers.clearLayers();
+
         var ajax = $.ajax({
             url : URL,
             dataType : 'jsonp',
@@ -419,7 +464,10 @@ var LIBRARY_OBJECT = (function() {
             success : function (response) {
                 wfs_response = response;
                 L.geoJson(wfs_response, {
-                    style: wfs_style_function,
+                    // style: wfs_style_function,
+                    pointToLayer: function (feature, latlng) {
+                        return L.circleMarker(latlng, markers_style_function(feature));
+                    },
                     onEachFeature: wfs_feature_function
                 }).addTo(markers);
             }
@@ -674,6 +722,12 @@ var LIBRARY_OBJECT = (function() {
     $(function() {
         init_all();
         view_region(region, get_region_aquifers);
+        Highcharts.setOptions({
+            lang: {
+                decimalPoint: '.',
+                thousandsSep: ','
+            }
+        });
         var aquifer_empty_opt = '<option value="" disabled selected="selected">Select Aquifer...</option>';
         $("#aquifer-select").prepend(aquifer_empty_opt);
         $("#aquifer-select").change(function(){
@@ -736,6 +790,17 @@ var LIBRARY_OBJECT = (function() {
             tdWmsLayer.setOpacity(opacity);
         });
 
+        var inputNumberMin = document.getElementById('input-number-min');
+        var inputNumberMax = document.getElementById('input-number-max');
+
+        inputNumberMin.addEventListener('change', function () {
+            slidervar.noUiSlider.set([this.value, inputNumberMax.value]);
+        });
+
+        inputNumberMax.addEventListener('change', function () {
+            slidervar.noUiSlider.set([inputNumberMin.value, this.value]);
+        });
+
 
         slidervar.noUiSlider.on('update', function( values, handle ) {
 
@@ -749,7 +814,10 @@ var LIBRARY_OBJECT = (function() {
             rangeMax = document.getElementById('input-number-max').value;
             markers.clearLayers();
             L.geoJson(wfs_response, {
-                style: wfs_style_function,
+                // style: wfs_style_function,
+                pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng, markers_style_function(feature));
+                },
                 onEachFeature: wfs_feature_function,
                 filter: wfs_filter_function
             }).addTo(markers);
