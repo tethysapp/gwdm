@@ -31,6 +31,7 @@
 {% url 'gwlm:update-measurements' as update_measurements_url %}
 {% url 'gwlm:add-variable' as add_variable_url %}
 {% url 'gwlm:update-variable' as update_variable_url %}
+{% url 'gwlm:delete-rasters' as delete_rasters %}
 <br>
 <li class="{% if request.path == home_url %}active{% endif %}"><a href="{{home_url}}">Home</a></li>
 <li class="{% if request.path == metrics_url %}active{% endif %}"><a href="{{metrics_url}}">Summary Statistics</a></li>
@@ -56,7 +57,7 @@
     <span class="menu-collapsed">Region</span>
   </div>
 </a>
-<div id='submenu1' class="collapse sidebar-submenu">
+<div id='submenu1' class="collapse sidebar-submenu {% if request.path == add_region_url or  request.path == update_region_url %}in{% endif %}">
   <li class="{% if request.path == add_region_url %}active{% endif %}">
     <a href="{{add_region_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Region</span>
@@ -73,7 +74,7 @@
     <span class="menu-collapsed">Aquifer</span>
   </div>
 </a>
-<div id='submenu2' class="collapse sidebar-submenu">
+<div id='submenu2' class="collapse sidebar-submenu {% if request.path == add_aquifer_url or  request.path == update_aquifer_url %}in{% endif %}">
   <li class="{% if request.path == add_aquifer_url %}active{% endif %}">
     <a href="{{add_aquifer_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Aquifer</span>
@@ -90,7 +91,8 @@
     <span class="menu-collapsed">Wells</span>
   </div>
 </a>
-<div id='submenu3' class="collapse sidebar-submenu">
+<div id='submenu3' class="collapse sidebar-submenu
+{% if request.path == add_wells_url or request.path == edit_wells_url or request.path == delete_wells %}in{% endif %}">
   <li class="{% if request.path == add_wells_url %}active{% endif %}">
     <a href="{{add_wells_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Wells</span>
@@ -112,8 +114,8 @@
     <span class="menu-collapsed">Measurements</span>
   </div>
 </a>
-<div id='submenu4' class="collapse sidebar-submenu">
-  <li class="{% if request.path == add_aquifer_url %}active{% endif %}">
+<div id='submenu4' class="collapse sidebar-submenu {% if request.path == add_measurements_url or  request.path == update_measurements_url %}in{% endif %}">
+  <li class="{% if request.path == add_measurements_url %}active{% endif %}">
     <a href="{{add_measurements_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Measurements</span>
     </a>
@@ -129,7 +131,7 @@
     <span class="menu-collapsed">Variables</span>
   </div>
 </a>
-<div id='submenu5' class="collapse sidebar-submenu">
+<div id='submenu5' class="collapse sidebar-submenu {% if request.path == add_variable_url or  request.path == update_variable_url %}in{% endif %}">
   <li class="{% if request.path == add_variable_url %}active{% endif %}">
     <a href="{{add_variable_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Variable</span>
@@ -137,13 +139,23 @@
   </li>
   <li class="{% if request.path == update_variable_url %}active{% endif %}">
     <a href="{{update_variable_url}}" class="list-group-item list-group-item-action bg-dark text-white">
-      <span class="menu-collapsed">Delete Measurements</span>
+      <span class="menu-collapsed">Edit Variables</span>
     </a>
   </li>
 </div>
-<script>
+<a href="#submenu6" data-toggle="collapse" aria-expanded="false" class="list-group-item list-group-item-action flex-column align-items-start">
+  <div>
+    <span class="menu-collapsed">Rasters</span>
+  </div>
+</a>
+<div id='submenu6' class="collapse sidebar-submenu {% if request.path == delete_rasters %}in{% endif %}">
+  <li class="{% if request.path == delete_rasters %}active{% endif %}">
+    <a href="{{delete_rasters}}" class="list-group-item list-group-item-action bg-dark text-white">
+      <span class="menu-collapsed">Delete Rasters</span>
+    </a>
+  </li>
+</div>
 
-</script>
 {% endif%}
 
 {% endblock %}

@@ -975,6 +975,12 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
     return response
 
 
+def delete_bulk_rasters(region_id, aquifer_id, variable_id, raster):
+    response = {}
+    response['success'] = 'success'
+    return response
+
+
 def delete_region_thredds_dir(region_id: str) -> str:
     """
     Delete the region directory in the Thredds public folder

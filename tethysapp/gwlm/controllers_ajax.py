@@ -21,6 +21,7 @@ from .utils import (create_outlier,
                     delete_region_thredds_dir,
                     delete_measurements,
                     delete_bulk_wells,
+                    delete_bulk_rasters,
                     get_session_obj,
                     user_permission_test,
                     process_region_shapefile,
@@ -511,6 +512,19 @@ def measurements_delete(request):
         region_id = info.get("region")
         aquifer_id = info.get('aquifer')
         response = delete_measurements(region_id, aquifer_id, variable_id)
+        return JsonResponse(response)
+
+
+@user_passes_test(user_permission_test)
+def rasters_delete(request):
+
+    if request.is_ajax() and request.method == 'POST':
+        info = request.POST
+        variable_id = info.get('variable')
+        region_id = info.get("region")
+        aquifer_id = info.get('aquifer')
+        raster = info.get('raster')
+        response = delete_bulk_rasters(region_id, aquifer_id, variable_id, raster)
         return JsonResponse(response)
 
 

@@ -460,6 +460,32 @@ def delete_wells(request):
 
 
 @user_passes_test(user_permission_test)
+def delete_rasters(request):
+    region_select = get_region_select()
+    aquifer_select = get_aquifer_select(None)
+    variable_select = get_region_variable_select(None)
+    select_interpolation = SelectInput(display_text='Interpolation Layer',
+                                       name='select-interpolation',
+                                       options=[],
+                                       multiple=False)
+    delete_button = Button(display_text='Delete Rasters',
+                           icon='glyphicon glyphicon-minus',
+                           style='danger',
+                           name='submit-delete-rasters',
+                           attributes={'id': 'submit-delete-rasters'},
+                           classes="delete")
+
+    context = {
+        'region_select': region_select,
+        'aquifer_select': aquifer_select,
+        'variable_select': variable_select,
+        'select_interpolation': select_interpolation,
+        'delete_button': delete_button
+    }
+    return render(request, 'gwlm/delete_rasters.html', context)
+
+
+@user_passes_test(user_permission_test)
 def add_measurements(request):
     region_select = get_region_select()
 

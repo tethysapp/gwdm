@@ -295,6 +295,26 @@ class Gwlm(TethysAppBase):
                 url='gwlm/update-variable/update',
                 controller='gwlm.controllers_ajax.variable_update'
             ),
+            UrlMap(
+                name='delete-rasters',
+                url='gwlm/delete-rasters',
+                controller='gwlm.controllers.delete_rasters'
+            ),
+            UrlMap(
+                name='delete-rasters-aquifers',
+                url='gwlm/delete-rasters/get-aquifers',
+                controller='gwlm.controllers_ajax.get_aquifers'
+            ),
+            UrlMap(
+                name='rasters-wms-datasets',
+                url='gwlm/delete-rasters/get-wms-datasets',
+                controller='gwlm.controllers_ajax.region_wms_datasets'
+            ),
+            UrlMap(
+                name='delete-rasters-submit',
+                url='gwlm/delete-rasters/submit',
+                controller='gwlm.controllers_ajax.rasters_delete'
+            ),
 
         )
 
