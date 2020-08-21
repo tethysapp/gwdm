@@ -80,3 +80,6 @@
     background-color: unset;
     border: unset;
 }
+.menu-header{
+    font-weight: bold;
+}

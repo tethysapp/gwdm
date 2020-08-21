@@ -1,6 +1,7 @@
 import calendar
 import json
 import os
+import glob
 import shutil
 import time
 import uuid
@@ -954,7 +955,6 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
     response = {}
     try:
         region_id = int(region)
-        session = get_session_obj()
         if aquifer == 'all':
             aquifers_list = get_region_aquifers_list(region_id)
             aquifers = [aqf[1] for aqf in aquifers_list]
@@ -962,7 +962,7 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
             aquifers = [int(aqf) for aqf in aquifer.split(',')]
         else:
             aquifers = [int(aquifer)]
-
+        session = get_session_obj()
         wells_query = session.query(Well).filter(Well.aquifer_id.in_(aquifers)).all()
         for well in wells_query:
             session.delete(well)
@@ -975,8 +975,56 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
     return response
 
 
-def delete_bulk_rasters(region_id, aquifer_id, variable_id, raster):
+def delete_bulk_rasters(region, aquifer, variable, raster):
     response = {}
+    try:
+        region_id = int(region)
+        all_aquifers = 'All Aquifers'
+        all_str = 'all'
+        if aquifer == all_aquifers:
+            aquifers_list = get_region_aquifers_list(region_id)
+            aquifers = [aqf[0].replace(" ", "_") for aqf in aquifers_list]
+        elif ',' in aquifer:
+            aquifers = [aqf.replace(" ", "_") for aqf in aquifer.split(',')]
+        else:
+            aquifers = [aquifer.replace(" ", "_")]
+
+        if variable == all_str:
+            variables_list = get_region_variables_list(region_id)
+            variables = [v[1] for v in variables_list]
+        elif ',' in aquifer:
+            variables = [v for v in variable.split(',')]
+        else:
+            variables = [variable]
+
+        thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+        region_dir = os.path.join(thredds_directory, str(region_id))
+        if aquifer == all_aquifers and variable == all_str and raster == all_str:
+            shutil.rmtree(region_dir)
+        elif aquifer != all_aquifers:
+            for aqf in aquifers:
+                for var in variables:
+                    if raster == all_str:
+                        raster_files = glob.glob(os.path.join(region_dir, aqf, f'*_{var}_*.nc'))
+                        for r_file in raster_files:
+                            os.remove(r_file)
+                    else:
+                        if ',' in raster:
+                            rasters = [r for r in raster.split(',')]
+                            for rast in rasters:
+                                r_file = os.path.join(region_dir, aqf, rast)
+                                os.remove(r_file)
+                        else:
+                            r_file = os.path.join(region_dir, aqf, raster)
+                            os.remove(r_file)
+        elif variable != all_str and aquifer == all_aquifers:
+            for aqf in aquifers:
+                raster_files = glob.glob(os.path.join(region_dir, aqf, f'*_{variable}_*.nc'))
+                for r_file in raster_files:
+                    os.remove(r_file)
+
+    except Exception as e:
+        response['error'] = str(e)
     response['success'] = 'success'
     return response
 

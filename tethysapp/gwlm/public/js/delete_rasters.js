@@ -46,7 +46,7 @@ var LIBRARY_OBJECT = (function() {
     delete_rasters = function(){
         reset_alert();
         var region = $("#region-select option:selected").val();
-        var aquifer = $("#aquifer-select option:selected").toArray().map(item => item.value).join();
+        var aquifer = $("#aquifer-select option:selected").toArray().map(item => item.text).join();
         var variable = $("#variable-select option:selected").toArray().map(item => item.value).join();
         var raster = $("#select-interpolation option:selected").toArray().map(item => item.value).join();
         if(aquifer === ""){
@@ -107,7 +107,7 @@ var LIBRARY_OBJECT = (function() {
                     var all_opt = new Option('All Rasters', 'all');
                     $("#select-interpolation").append(all_opt);
                     wms_options.forEach(function(attr,i){
-                        var wms_option = new Option(attr[1], attr[0]);
+                        var wms_option = new Option(attr[1], attr[1]);
                         $("#select-interpolation").append(wms_option);
                     });
                 }
@@ -153,12 +153,12 @@ var LIBRARY_OBJECT = (function() {
                     $("#aquifer-select").html('');
                     $("#variable-select").html('');
                     $("#variable-select").select2({'multiple': true,  placeholder: "Select a Variable(s)"});
-                    $("#aquifer-select").select2({'multiple': true,  placeholder: "Select an Aquifer(s)"});
-                    // var empty_opt = '<option value="" selected disabled>Select item...</option>';
+                    $("#aquifer-select").select2({'multiple': false,  placeholder: "Select an Aquifer(s)"});
+                    var empty_opt = '<option value="" selected disabled>Select item...</option>';
                     // var var_empty_opt = '<option value="" selected disabled>Select item...</option>';
                     var all_opt = new Option('All Aquifers', 'all');
                     var all_var_opt = new Option('All Variables', 'all');
-                    // $("#aquifer-select").append(empty_opt);
+                    $("#aquifer-select").append(empty_opt);
                     $("#aquifer-select").append(all_opt);
                     // $("#variable-select").append(var_empty_opt);
                     $("#variable-select").append(all_var_opt);
@@ -177,16 +177,16 @@ var LIBRARY_OBJECT = (function() {
             });
         }).change();
 
-        $("#aquifer-select").on('select2:select select2:unselecting', function(){
-            var selected = $(this).val();
-
-            if(selected != null)
-            {
-                if(selected.indexOf('all')>=0){
-                    $(this).val('all').select2();
-                }
-            }
-        });
+        // $("#aquifer-select").on('select2:select select2:unselecting', function(){
+        //     var selected = $(this).val();
+        //
+        //     if(selected != null)
+        //     {
+        //         if(selected.indexOf('all')>=0){
+        //             $(this).val('all').select2();
+        //         }
+        //     }
+        // });
 
         $("#variable-select").on('select2:select select2:unselecting', function(){
             var selected = $(this).val();
