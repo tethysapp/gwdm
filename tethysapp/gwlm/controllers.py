@@ -460,6 +460,27 @@ def delete_wells(request):
 
 
 @user_passes_test(user_permission_test)
+def upload_rasters(request):
+    region_select = get_region_select()
+    aquifer_select = get_aquifer_select(None)
+    variable_select = get_region_variable_select(None)
+    add_button = Button(display_text='Add Rasters',
+                        icon='glyphicon glyphicon-plus',
+                        style='success',
+                        name='submit-upload-rasters',
+                        attributes={'id': 'submit-upload-rasters'},
+                        classes="delete")
+
+    context = {
+        'region_select': region_select,
+        'aquifer_select': aquifer_select,
+        'variable_select': variable_select,
+        'add_button': add_button
+    }
+    return render(request, 'gwlm/upload_rasters.html', context)
+
+
+@user_passes_test(user_permission_test)
 def delete_rasters(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)

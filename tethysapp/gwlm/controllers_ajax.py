@@ -34,6 +34,7 @@ from .utils import (create_outlier,
                     get_wms_metadata,
                     get_region_aquifers_list,
                     get_region_variables_list,
+                    process_nc_files,
                     process_wells_file,
                     process_measurements_file)
 
@@ -512,6 +513,22 @@ def measurements_delete(request):
         region_id = info.get("region")
         aquifer_id = info.get('aquifer')
         response = delete_measurements(region_id, aquifer_id, variable_id)
+        return JsonResponse(response)
+
+
+@user_passes_test(user_permission_test)
+def rasters_upload(request):
+    """
+    Ajax controller to upload rasters
+    """
+    if request.is_ajax() and request.method == 'POST':
+        info = request.POST
+        file = request.FILES.getlist('ncfiles')
+        variable = int(info.get("variable"))
+        region = int(info.get("region"))
+        aquifer = info.get('aquifer')
+        response = process_nc_files(region, aquifer, variable, file)
+
         return JsonResponse(response)
 
 

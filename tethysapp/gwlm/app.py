@@ -315,6 +315,21 @@ class Gwlm(TethysAppBase):
                 url='gwlm/delete-rasters/submit',
                 controller='gwlm.controllers_ajax.rasters_delete'
             ),
+            UrlMap(
+                name='upload-rasters',
+                url='gwlm/upload-rasters',
+                controller='gwlm.controllers.upload_rasters'
+            ),
+            UrlMap(
+                name='upload-rasters-aquifers',
+                url='gwlm/upload-rasters/get-aquifers',
+                controller='gwlm.controllers_ajax.get_aquifers'
+            ),
+            UrlMap(
+                name='upload-rasters-ajax',
+                url='gwlm/upload-rasters/submit',
+                controller='gwlm.controllers_ajax.rasters_upload'
+            ),
 
         )
 

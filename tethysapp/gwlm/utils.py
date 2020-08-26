@@ -975,6 +975,28 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
     return response
 
 
+def process_nc_files(region, aquifer, variable, file):
+    response = {}
+    try:
+        thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+        region_dir = os.path.join(thredds_directory, str(region))
+        aquifer = aquifer.replace(" ", "_")
+        if not os.path.exists(region_dir):
+            os.makedirs(region_dir)
+        aquifer_dir = os.path.join(region_dir, str(aquifer))
+        if not os.path.exists(aquifer_dir):
+            os.makedirs(aquifer_dir)
+        for f in file:
+            f_name = f'{aquifer}_{variable}_{time.time()}.nc'
+            f_path = os.path.join(aquifer_dir, f_name)
+            with open(f_path, 'wb') as f_local:
+                f_local.write(f.read())
+        response['success'] = 'success'
+    except Exception as e:
+        response['error'] = str(e)
+    return response
+
+
 def delete_bulk_rasters(region, aquifer, variable, raster):
     response = {}
     try:

@@ -31,6 +31,7 @@
 {% url 'gwlm:update-measurements' as update_measurements_url %}
 {% url 'gwlm:add-variable' as add_variable_url %}
 {% url 'gwlm:update-variable' as update_variable_url %}
+{% url 'gwlm:upload-rasters' as upload_rasters %}
 {% url 'gwlm:delete-rasters' as delete_rasters %}
 <br>
 <li class="{% if request.path == home_url %}active{% endif %}"><a href="{{home_url}}">Home</a></li>
@@ -148,7 +149,12 @@
     <span class="menu-collapsed menu-header">Rasters</span>
   </div>
 </a>
-<div id='submenu6' class="collapse sidebar-submenu {% if request.path == delete_rasters %}in{% endif %}">
+<div id='submenu6' class="collapse sidebar-submenu {% if request.path == delete_rasters or request.path == upload_rasters %}in{% endif %}">
+  <li class="{% if request.path == upload_rasters %}active{% endif %}">
+    <a href="{{upload_rasters}}" class="list-group-item list-group-item-action bg-dark text-white">
+      <span class="menu-collapsed">Upload Rasters</span>
+    </a>
+  </li>
   <li class="{% if request.path == delete_rasters %}active{% endif %}">
     <a href="{{delete_rasters}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Delete Rasters</span>
