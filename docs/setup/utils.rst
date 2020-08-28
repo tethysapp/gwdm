@@ -2,5 +2,5 @@
 Utils File
 ********************************************
 
-.. automodule:: tethysapp.gwlm.utils
+.. automodule:: tethysapp.gwdm.utils
     :members:

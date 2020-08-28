@@ -55,8 +55,8 @@ You can use the following command to set alias via bashrc or you can use the com
 Clone the app repository into a directory of choice and install it
 ::
 
-    git clone https://github.com/BYU-Hydroinformatics/gwlm.git
-    cd gwlm
+    git clone https://github.com/BYU-Hydroinformatics/gwdm.git
+    cd gwdm
     tethys install -d
 
 **Web Admin Setup**

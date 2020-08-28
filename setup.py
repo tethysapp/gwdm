@@ -2,7 +2,7 @@ from setuptools import setup, find_namespace_packages
 from tethys_apps.app_installation import find_resource_files
 
 # -- Apps Definition -- #
-app_package = 'gwlm'
+app_package = 'gwdm'
 release_package = 'tethysapp-' + app_package
 
 # -- Python Dependencies -- #
@@ -16,12 +16,12 @@ resource_files += find_resource_files('tethysapp/' + app_package + '/workspaces'
 setup(
     name=release_package,
     version='0.0.1',
-    description='Ground Water Level Mapper',
+    description='Ground Water Data Mapper',
     long_description='',
     keywords='',
     author='Sarva Pulla',
     author_email='',
-    url='https://github.com/BYU-Hydroinformatics/gwlm',
+    url='https://github.com/BYU-Hydroinformatics/gwdm',
     license='MIT',
     packages=find_namespace_packages(),
     package_data={'': resource_files},
