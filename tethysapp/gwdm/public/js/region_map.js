@@ -38,6 +38,7 @@ var LIBRARY_OBJECT = (function() {
         slidervar,
         $threddsUrl,
         tdWmsLayer,
+        user_status,
         wfs_response,
         wmsLayer,
         wms_legend,
@@ -103,6 +104,8 @@ var LIBRARY_OBJECT = (function() {
         $modalChart = $("#chart-modal");
         $threddsUrl = $("#thredds-text-input").val();
         region = $("#region-text-input").val();
+        user_status = $("#user-info").attr('user-status');
+        console.log(user_status);
     };
 
 
@@ -287,7 +290,17 @@ var LIBRARY_OBJECT = (function() {
                 popupString += k + ': ' + v + '<br />';
             }
             // console.log(well_obs[well_id]);
-            popupString += '<a class="btn btn-default set-outlier" id="set-outlier" name="set-outlier">Outlier</a></div>';
+
+            if(user_status === 'admin'){
+                // popupString += '<a class="btn btn-default set-outlier" id="set-outlier" name="set-outlier">Outlier</a></div>';
+                var outlier_status = feature.properties['outlier'];
+                var checked = '';
+                if(outlier_status){
+                    checked = 'checked';
+                }
+                var outlier_toggle = '<input type="checkbox" class="set-outlier" id="outlier-toggle" name="outlier-toggle" '+checked+'><label for="outlier-toggle">Set Outlier</label>';
+                popupString += outlier_toggle;
+            }
             layer.bindPopup(popupString);
             layer.on('click', get_ts);
         }
@@ -521,8 +534,8 @@ var LIBRARY_OBJECT = (function() {
     };
 
     // $("#set-outlier").click(set_outlier);
-    jQuery("body").on('click','a.set-outlier', function(e){
-        e.preventDefault();
+    jQuery("body").on('click','.set-outlier', function(e){
+        // e.preventDefault();
         set_outlier();
     });
 

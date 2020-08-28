@@ -196,6 +196,11 @@ class Gwdm(TethysAppBase):
                 controller='gwdm.controllers.edit_wells'
             ),
             UrlMap(
+                name='edit-wells-aquifers',
+                url='gwdm/edit-wells/get-aquifers',
+                controller='gwdm.controllers_ajax.get_aquifers'
+            ),
+            UrlMap(
                 name='edit-wells-tabulator',
                 url='gwdm/edit-wells/tabulator',
                 controller='gwdm.controllers_ajax.wells_tabulator'

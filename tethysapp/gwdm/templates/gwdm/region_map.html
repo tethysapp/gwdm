@@ -64,7 +64,10 @@
     <label for="input-number-min"></label><input type="number" pattern="\d*" min='0' max='999999' id="input-number-min" step="1">
     <label for="input-number-max"></label><input type="number" pattern="\d*" min='0' max='999999' id="input-number-max" step="1">
 </div>
-<div class="hidden">{% gizmo geoserver_text_input %} {% gizmo thredds_text_input %} {% gizmo region_text_input %}</div>
+<div class="hidden">
+    {% gizmo geoserver_text_input %} {% gizmo thredds_text_input %} {% gizmo region_text_input %}
+    <div id="user-info" user-status="{% if user.is_superuser or user.is_staff %}admin{% else %} regular{% endif%}"></div>
+</div>
 {% endblock %}
 
 {% block app_content %}

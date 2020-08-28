@@ -32,7 +32,6 @@ var LIBRARY_OBJECT = (function() {
         init_jquery_vars,
         init_dropdown,
         init_map,
-        init_table,
         reset_form,
         view_well;
 
@@ -145,35 +144,10 @@ var LIBRARY_OBJECT = (function() {
     init_dropdown = function () {
     };
 
-    init_table = function(){
-        var table = new Tabulator("#tabulator-table", {
-            height:"311px",
-            responsiveLayout:true, // enable responsive layouts
-            layout:"fitColumns",
-            ajaxURL:"tabulator",
-            ajaxProgressiveLoad:"load",
-            paginationSize:10,
-            placeholder:"No Data Set",
-            selectable:1,
-            selectablePersistence:false,
-            columns:[
-                {title:"ID", field:"id", sorter:"number", align:"center"},
-                {title:"View", formatter:viewIcon, align:"center", cellClick:function(e, cell){view_well(e, cell)}},
-                // {title:"Edit", formatter:updateIcon, align:"center", cellClick:function(e, cell){update_form(e, cell)}},
-                {title:"Delete", formatter:deleteIcon, align:"center", cellClick:function(e, cell){delete_well(e, cell)}},
-                {title:"Well Name", field:"well_name", sorter:"string", headerFilter:"select", headerFilterParams:{values:true}},
-                // {title:"Well ID", field:"well_id", sorter:"string", headerFilter:"select", headerFilterParams:{values:true}},
-                {title:"GSE", field:"gse", sorter:"string"},
-                {title:"Attributes", field:"attr_dict", align:"center", sorter:"string"},
-            ]
-        });
-    };
-
     init_all = function(){
         init_jquery_vars();
         init_map();
         init_dropdown();
-        init_table();
     };
 
     /************************************************************************
@@ -198,6 +172,63 @@ var LIBRARY_OBJECT = (function() {
     // the DOM tree finishes loading
     $(function() {
         init_all();
+        $("#region-select").change(function(){
+            wellGroup.clearLayers();
+            $("#tabulator-table").html('');
+            var region = $("#region-select option:selected").val();
+            var xhr = ajax_update_database("get-aquifers", {'id': region}); //Submitting the data through the ajax function, see main.js for the helper function.
+            xhr.done(function(return_data){ //Reset the form once the data is added successfully
+                if("success" in return_data){
+                    var options = return_data["aquifers_list"];
+                    var var_options = return_data["variables_list"];
+                    $("#aquifer-select").html('');
+                    // $("#aquifer-select").select2({'multiple': true,  placeholder: "Select an Aquifer(s)"});
+                    var empty_opt = '<option value="" selected disabled>Select item...</option>';
+                    // var var_empty_opt = '<option value="" selected disabled>Select item...</option>';
+                    // var all_opt = new Option('All Aquifers', 'all');
+                    $("#aquifer-select").append(empty_opt);
+                    // $("#aquifer-select").append(all_opt);
+                    // $("#variable-select").append(var_empty_opt);
+                    options.forEach(function(attr,i){
+                        var aquifer_option = new Option(attr[0], attr[1]);
+                        $("#aquifer-select").append(aquifer_option);
+                    });
+
+                }else{
+                    addErrorMessage(return_data['error']);
+                }
+            });
+        }).change();
+
+        $("#aquifer-select").change(function() {
+            wellGroup.clearLayers();
+            var region = $("#region-select option:selected").val();
+            var aquifer = $("#aquifer-select option:selected").val();
+            $("#tabulator-table").html('');
+            var table = new Tabulator("#tabulator-table", {
+                height:"311px",
+                responsiveLayout:true, // enable responsive layouts
+                layout:"fitColumns",
+                ajaxURL:"tabulator",
+                ajaxParams: {'region': region, 'aquifer': aquifer},
+                ajaxProgressiveLoad:"load",
+                paginationSize:10,
+                placeholder:"No Data Set",
+                selectable:1,
+                selectablePersistence:false,
+                columns:[
+                    {title:"ID", field:"id", sorter:"number", align:"center"},
+                    {title:"View", formatter:viewIcon, align:"center", cellClick:function(e, cell){view_well(e, cell)}},
+                    // {title:"Edit", formatter:updateIcon, align:"center", cellClick:function(e, cell){update_form(e, cell)}},
+                    {title:"Delete", formatter:deleteIcon, align:"center", cellClick:function(e, cell){delete_well(e, cell)}},
+                    {title:"Well Name", field:"well_name", sorter:"string", headerFilter:"select", headerFilterParams:{values:true}},
+                    // {title:"Well ID", field:"well_id", sorter:"string", headerFilter:"select", headerFilterParams:{values:true}},
+                    {title:"GSE", field:"gse", sorter:"string"},
+                    {title:"Attributes", field:"attr_dict", align:"center", sorter:"string"},
+                ]
+            });
+        });
+
     });
 
     return public_interface;

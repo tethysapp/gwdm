@@ -410,16 +410,19 @@ def wells_tabulator(request):
     """
     Ajax controller for the wells tabulator table
     """
+    info = request.GET
+    region_id = info.get('region')
+    aquifer_id = info.get('aquifer')
     page = int(request.GET.get('page'))
     page = page - 1
     size = int(request.GET.get('size'))
     session = get_session_obj()
     # RESULTS_PER_PAGE = 10
-    num_wells = session.query(Well).count()
+    num_wells = session.query(Well).filter(Well.aquifer_id == aquifer_id).count()
     last_page = math.ceil(int(num_wells) / int(size))
     data_dict = []
 
-    wells = (session.query(Well).order_by(Well.id)
+    wells = (session.query(Well).filter(Well.aquifer_id == aquifer_id).order_by(Well.id)
     [(page * size):((page + 1) * size)])
 
     for well in wells:

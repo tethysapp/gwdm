@@ -433,9 +433,13 @@ def add_wells(request):
 @user_passes_test(user_permission_test)
 def edit_wells(request):
     geoserver_text_input = geoserver_text_gizmo()
+    region_select = get_region_select()
+    aquifer_select = get_aquifer_select(None)
 
     context = {
-        'geoserver_text_input': geoserver_text_input
+        'geoserver_text_input': geoserver_text_input,
+        'region_select': region_select,
+        'aquifer_select': aquifer_select
     }
     return render(request, 'gwdm/edit_wells.html', context)
 
