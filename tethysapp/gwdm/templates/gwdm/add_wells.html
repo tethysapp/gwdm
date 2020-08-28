@@ -11,6 +11,7 @@
 
 {% gizmo aquifer_select %}
 <p class="help-block">Don't see the Aquifer you want? Add one <a href="{% url 'gwdm:add-aquifer' %}">here</a>.</p>
+<p class="help-block">Note: Do not use the Select Aquifer dropdown if you have an AquiferID column in your csv file.</p>
 
 <div class="form-group shp_upload">
     <label class="control-label" for="shp-upload-input">Shapefile (.shp, .shx, .dbf required) or .csv file:</label>

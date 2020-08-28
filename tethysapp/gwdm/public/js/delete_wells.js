@@ -113,6 +113,7 @@ var LIBRARY_OBJECT = (function() {
                     var options = return_data["aquifers_list"];
                     var var_options = return_data["variables_list"];
                     $("#aquifer-select").html('');
+                    $("#aquifer-select").val(null).trigger('change.select2');
                     $("#aquifer-select").select2({'multiple': true,  placeholder: "Select an Aquifer(s)"});
                     // var empty_opt = '<option value="" selected disabled>Select item...</option>';
                     // var var_empty_opt = '<option value="" selected disabled>Select item...</option>';

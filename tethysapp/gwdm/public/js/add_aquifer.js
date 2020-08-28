@@ -84,6 +84,14 @@ var LIBRARY_OBJECT = (function() {
                 $(".attributes").removeClass('hidden');
                 $("#name_attributes").html('');
                 $("#id_attributes").html('');
+                $("#name_attributes").val(null).trigger('change.select2');
+                $("#id_attributes").val(null).trigger('change.select2');
+
+                var empty_opt = '<option value="" selected disabled>Select Name...</option>';
+                var empty_opt_2 = '<option value="" selected disabled>Select ID...</option>';
+                $("#name_attributes").append(empty_opt);
+                $("#id_attributes").append(empty_opt_2);
+
                 var attributes = return_data["attributes"];
                 attributes.forEach(function(attr,i){
                     var name_option = new Option(attr, attr);

@@ -64,6 +64,10 @@ var LIBRARY_OBJECT = (function() {
         $("#time_attributes").html('');
         $("#value_attributes").html('');
         $("#aquifer_attributes").html('');
+        $("#id_attributes").val(null).trigger('change.select2');
+        $("#time_attributes").val(null).trigger('change.select2');
+        $("#value_attributes").val(null).trigger('change.select2');
+        $("#aquifer_attributes").val(null).trigger('change.select2');
     };
 
     init_dropdown = function () {
@@ -231,7 +235,6 @@ var LIBRARY_OBJECT = (function() {
             var xhr = ajax_update_database("check-date-format", {'time_format': time_format});
             xhr.done(function(return_data){ //Reset the form once the data is added successfully
                 if("success" in return_data){
-                    console.log(return_data);
                     var is_valid = return_data['is_valid'];
                     if(is_valid===true){
                         $('.submit-add-measurements').removeClass('hidden');

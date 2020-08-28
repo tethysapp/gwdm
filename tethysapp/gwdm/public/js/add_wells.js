@@ -53,6 +53,13 @@ var LIBRARY_OBJECT = (function() {
         $("#gse_attributes").html('');
         $("#aquifer_attributes").html('');
         $("#meta_attributes").html('');
+        $("#name_attributes").val(null).trigger('change.select2');
+        $("#id_attributes").val(null).trigger('change.select2');
+        $("#lat_attributes").val(null).trigger('change.select2');
+        $("#lon_attributes").val(null).trigger('change.select2');
+        $("#gse_attributes").val(null).trigger('change.select2');
+        $("#aquifer_attributes").val(null).trigger('change.select2');
+        $("#meta_attributes").val(null).trigger('change.select2');
     };
 
     init_jquery_vars = function(){
@@ -72,7 +79,6 @@ var LIBRARY_OBJECT = (function() {
 
 
     get_shp_attributes = function(){
-
         var shapefiles = $("#shp-upload-input")[0].files;
         if($shp_input.val() === ""){
             addErrorMessage("Layer Shape File cannot be empty!");
@@ -125,6 +131,7 @@ var LIBRARY_OBJECT = (function() {
             }else{
                 addErrorMessage(return_data['error']);
                 submit_button.html(submit_button_html);
+                reset_dropdown();
 
             }
         });
@@ -173,7 +180,6 @@ var LIBRARY_OBJECT = (function() {
             if("success" in return_data){
                 submit_button.html(submit_button_html);
                 reset_form(return_data);
-                console.log(return_data);
             }else{
                 addErrorMessage(return_data['error']);
             }

@@ -546,58 +546,62 @@ def process_wells_file(lat: str,
     session = get_session_obj()
     try:
         gdf, temp_dir = get_shapefile_gdf(file, app_workspace, polygons=False)
-        rename_cols = {lat: 'latitude',
-                       lon: 'longitude',
-                       well_id: 'well_id',
-                       name: 'well_name',
-                       gse: 'gse'}
-        if len(aquifer_id) > 0:
-            gdf['aquifer_id'] = aquifer_id
-            gdf = gdf.rename(columns=rename_cols)
 
-        if len(aquifer_col) > 0:
-            rename_cols[aquifer_col] = 'aquifer_id'
-            gdf.rename(columns=rename_cols, inplace=True)
-            if gdf['aquifer_id'].dtypes == np.float64:
-                gdf['aquifer_id'] = gdf['aquifer_id'].astype(int)
+        if gdf.isnull().sum().sum() == 0:
 
-            gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
-            aquifer_ids = list(gdf['aquifer_id'].unique().astype(str))
-            aquifer = (session.query(Aquifer).filter(Aquifer.region_id == region_id,
-                                                     Aquifer.aquifer_id.in_(aquifer_ids)).all())
-            aq_dict = {aq.aquifer_id: aq.id for aq in aquifer}
-            gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
-            gdf['aquifer_id'] = gdf['aquifer_id'].map(aq_dict)
+            rename_cols = {lat: 'latitude',
+                           lon: 'longitude',
+                           well_id: 'well_id',
+                           name: 'well_name',
+                           gse: 'gse'}
+            if len(aquifer_id) > 0:
+                gdf['aquifer_id'] = aquifer_id
+                gdf = gdf.rename(columns=rename_cols)
 
-        attributes = None
-        if attrs:
-            attributes = attrs.split(',')
+            if len(aquifer_col) > 0:
+                rename_cols[aquifer_col] = 'aquifer_id'
+                gdf.rename(columns=rename_cols, inplace=True)
+                if gdf['aquifer_id'].dtypes == np.float64:
+                    gdf['aquifer_id'] = gdf['aquifer_id'].astype(int)
 
-        well_aquifers_list = [int(aqf_id) for aqf_id in gdf['aquifer_id'].unique()]
-        wells_query = (session.query(Well.well_id).filter(Well.aquifer_id.in_(well_aquifers_list)).all())
-        existing_wells = [value for value, in wells_query]
-        gdf = gdf.loc[~gdf['well_id'].isin(existing_wells)]
-        for row in gdf.itertuples():
-            attr_dict = {}
-            if attributes:
-                attr_dict = {attr: getattr(row, attr) for attr in attributes}
+                gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
+                aquifer_ids = list(gdf['aquifer_id'].unique().astype(str))
+                aquifer = (session.query(Aquifer).filter(Aquifer.region_id == region_id,
+                                                         Aquifer.aquifer_id.in_(aquifer_ids)).all())
+                aq_dict = {aq.aquifer_id: aq.id for aq in aquifer}
+                gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
+                gdf['aquifer_id'] = gdf['aquifer_id'].map(aq_dict)
 
-            attr_dict = simplejson.dumps(attr_dict, ignore_nan=True)
-            attr_dict = json.loads(attr_dict)
-            well = Well(aquifer_id=int(row.aquifer_id),
-                        latitude=float(row.latitude),
-                        longitude=float(row.longitude),
-                        well_id=str(row.well_id),
-                        well_name=str(row.well_name),
-                        gse=float(row.gse),
-                        attr_dict=attr_dict,
-                        outlier=False)
-            session.add(well)
-        session.commit()
-        session.close()
+            attributes = None
+            if attrs:
+                attributes = attrs.split(',')
 
-        response = {'success': 'success'}
+            well_aquifers_list = [int(aqf_id) for aqf_id in gdf['aquifer_id'].unique()]
+            wells_query = (session.query(Well.well_id).filter(Well.aquifer_id.in_(well_aquifers_list)).all())
+            existing_wells = [value for value, in wells_query]
+            gdf = gdf.loc[~gdf['well_id'].isin(existing_wells)]
+            for row in gdf.itertuples():
+                attr_dict = {}
+                if attributes:
+                    attr_dict = {attr: getattr(row, attr) for attr in attributes}
 
+                attr_dict = simplejson.dumps(attr_dict, ignore_nan=True)
+                attr_dict = json.loads(attr_dict)
+                well = Well(aquifer_id=int(row.aquifer_id),
+                            latitude=float(row.latitude),
+                            longitude=float(row.longitude),
+                            well_id=str(row.well_id),
+                            well_name=str(row.well_name),
+                            gse=float(row.gse),
+                            attr_dict=attr_dict,
+                            outlier=False)
+                session.add(well)
+            session.commit()
+            session.close()
+
+            response = {'success': 'success'}
+        else:
+            response = {'error': 'There were null values in the data. Please fix the data and upload again.'}
     except Exception as e:
         session.close()
         if temp_dir is not None:
@@ -650,43 +654,51 @@ def process_measurements_file(region_id: int,
                        m_time: 'time',
                        value: 'value'}
         gdf = gdf.rename(columns=rename_cols)
-        gdf['variable_id'] = variable_id
+        pd.to_datetime(gdf['time'], format=time_format)
+        if gdf.isnull().sum().sum() == 0:
 
-        if len(aquifer_id) > 0:
-            gdf['aquifer_id'] = aquifer_id
+            rename_cols = {well_id: 'well_id',
+                           m_time: 'time',
+                           value: 'value'}
             gdf = gdf.rename(columns=rename_cols)
+            gdf['variable_id'] = variable_id
 
-        if len(aquifer_col) > 0:
-            rename_cols[aquifer_col] = 'aquifer_id'
-            gdf.rename(columns=rename_cols, inplace=True)
+            if len(aquifer_id) > 0:
+                gdf['aquifer_id'] = aquifer_id
+                gdf = gdf.rename(columns=rename_cols)
+
+            if len(aquifer_col) > 0:
+                rename_cols[aquifer_col] = 'aquifer_id'
+                gdf.rename(columns=rename_cols, inplace=True)
+                aquifer_ids = list(gdf['aquifer_id'].unique().astype(str))
+                aquifers = (session.query(Aquifer).filter(Aquifer.region_id == region_id,
+                                                          Aquifer.aquifer_id.in_(aquifer_ids)).all())
+                aq_dict = {aq.aquifer_id: aq.id for aq in aquifers}
+                gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
+                gdf['aquifer_id'] = gdf['aquifer_id'].map(aq_dict)
+
             aquifer_ids = list(gdf['aquifer_id'].unique().astype(str))
-            aquifers = (session.query(Aquifer).filter(Aquifer.region_id == region_id,
-                                                      Aquifer.aquifer_id.in_(aquifer_ids)).all())
-            aq_dict = {aq.aquifer_id: aq.id for aq in aquifers}
-            gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
-            gdf['aquifer_id'] = gdf['aquifer_id'].map(aq_dict)
+            well_ids = list(gdf['well_id'].unique().astype(str))
+            wells = (session.query(Well).filter(Well.well_id.in_(well_ids),
+                                                Well.aquifer_id.in_(aquifer_ids)).all())
 
-        aquifer_ids = list(gdf['aquifer_id'].unique().astype(str))
-        well_ids = list(gdf['well_id'].unique().astype(str))
-        wells = (session.query(Well).filter(Well.well_id.in_(well_ids),
-                                            Well.aquifer_id.in_(aquifer_ids)).all())
-
-        well_dict = {well.well_id: well.id for well in wells}
-        gdf['well_id'] = gdf['well_id'].astype(str)
-        gdf['well_id'] = gdf['well_id'].map(well_dict)
-        gdf.dropna(subset=['time', 'value'], inplace=True)
-        for row in gdf.itertuples():
-            measurement = Measurement(well_id=int(row.well_id),
-                                      variable_id=int(row.variable_id),
-                                      ts_time=row.time,
-                                      ts_value=float(row.value),
-                                      ts_format=time_format
-                                      )
-            session.add(measurement)
-        session.commit()
-        session.close()
-        response = {'success': 'success'}
-
+            well_dict = {well.well_id: well.id for well in wells}
+            gdf['well_id'] = gdf['well_id'].astype(str)
+            gdf['well_id'] = gdf['well_id'].map(well_dict)
+            gdf.dropna(subset=['time', 'value'], inplace=True)
+            for row in gdf.itertuples():
+                measurement = Measurement(well_id=int(row.well_id),
+                                          variable_id=int(row.variable_id),
+                                          ts_time=row.time,
+                                          ts_value=float(row.value),
+                                          ts_format=time_format
+                                          )
+                session.add(measurement)
+            session.commit()
+            session.close()
+            response = {'success': 'success'}
+        else:
+            response = {'error': 'There were null values in the data. Please fix the data and upload again.'}
     except Exception as e:
         session.close()
         if temp_dir is not None:
@@ -975,7 +987,19 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
     return response
 
 
-def process_nc_files(region, aquifer, variable, file):
+def process_nc_files(region: int, aquifer: str, variable: str, file: Any) -> Dict:
+    """
+    Upload NetCDF files to the Thredds Directory
+
+    Args:
+        region: Region ID as listed in the Database
+        aquifer: Aquifer Name as listed in the Database
+        variable: Variable ID as listed in the Database
+        file: File(s) to upload
+
+    Returns:
+        JSON Response indicating if the files were uploaded
+    """
     response = {}
     try:
         thredds_directory = app.get_custom_setting('gw_thredds_directoy')
@@ -997,7 +1021,19 @@ def process_nc_files(region, aquifer, variable, file):
     return response
 
 
-def delete_bulk_rasters(region, aquifer, variable, raster):
+def delete_bulk_rasters(region: str, aquifer: str, variable: str, raster: str) -> Dict:
+    """
+    Delete Rasters from Thredds Directory
+
+    Args:
+        region: Region ID String as listed in the database
+        aquifer: Aquifer Name String as listed in the database
+        variable: Variable String as listed in the database
+        raster: Raster File String as listed in Thredds
+
+    Returns:
+        JSON Dict indicating if the files were deleted
+    """
     response = {}
     try:
         region_id = int(region)
@@ -1070,6 +1106,14 @@ def delete_region_thredds_dir(region_id: str) -> str:
 
 
 def date_format_validator(date_format: str) -> bool:
+    """
+    Validate the date format entered by the user
+    Args:
+        date_format: Date Format String
+
+    Returns:
+        Boolean indicating if the format is good
+    """
     test_date = '12-31-1999'
     try:
         valid_date = datetime.strptime(test_date, '%m-%d-%Y').strftime(date_format)

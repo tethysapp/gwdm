@@ -79,14 +79,11 @@ var LIBRARY_OBJECT = (function() {
             if("success" in return_data){
                 submit_button.html(submit_button_html);
                 reset_form(return_data);
-                console.log(return_data);
             }else{
                 submit_button.html(submit_button_html);
                 addErrorMessage(return_data['error']);
-                console.log(return_data['error'])
             }
         });
-
 
     };
 
@@ -99,6 +96,7 @@ var LIBRARY_OBJECT = (function() {
             xhr.done(function(return_data) {
                 if ("success" in return_data) {
                     $("#select-interpolation").html('');
+                    $("#select-interpolation").val(null).trigger('change.select2');
                     $("#select-interpolation").select2({'multiple': true,  placeholder: "Select a Raster(s)"});
                     // $("#select-interpolation").prop("selected", false);
                     var empty_opt = '<option value="" selected disabled>Select item...</option>';
@@ -115,7 +113,6 @@ var LIBRARY_OBJECT = (function() {
         }
 
     };
-
 
     init_all = function(){
         init_jquery_vars();
@@ -152,6 +149,8 @@ var LIBRARY_OBJECT = (function() {
                     var var_options = return_data["variables_list"];
                     $("#aquifer-select").html('');
                     $("#variable-select").html('');
+                    $("#aquifer-select").val(null).trigger('change.select2');
+                    $("#variable-select").val(null).trigger('change.select2');
                     $("#variable-select").select2({'multiple': true,  placeholder: "Select a Variable(s)"});
                     $("#aquifer-select").select2({'multiple': false,  placeholder: "Select an Aquifer(s)"});
                     var empty_opt = '<option value="" selected disabled>Select item...</option>';
@@ -176,17 +175,6 @@ var LIBRARY_OBJECT = (function() {
                 }
             });
         }).change();
-
-        // $("#aquifer-select").on('select2:select select2:unselecting', function(){
-        //     var selected = $(this).val();
-        //
-        //     if(selected != null)
-        //     {
-        //         if(selected.indexOf('all')>=0){
-        //             $(this).val('all').select2();
-        //         }
-        //     }
-        // });
 
         $("#variable-select").on('select2:select select2:unselecting', function(){
             var selected = $(this).val();
