@@ -527,7 +527,7 @@ def rasters_upload(request):
     if request.is_ajax() and request.method == 'POST':
         info = request.POST
         file = request.FILES.getlist('ncfiles')
-        variable = int(info.get("variable"))
+        variable = info.get("variable")
         region = int(info.get("region"))
         aquifer = info.get('aquifer')
         response = process_nc_files(region, aquifer, variable, file)

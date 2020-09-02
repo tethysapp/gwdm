@@ -467,7 +467,7 @@ def delete_wells(request):
 def upload_rasters(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
-    variable_select = get_region_variable_select(None)
+    variable_select = get_variable_select()
     add_button = Button(display_text='Add Rasters',
                         icon='glyphicon glyphicon-plus',
                         style='success',
@@ -488,7 +488,7 @@ def upload_rasters(request):
 def delete_rasters(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
-    variable_select = get_region_variable_select(None)
+    variable_select = get_variable_select()
     select_interpolation = SelectInput(display_text='Interpolation Layer',
                                        name='select-interpolation',
                                        options=[],

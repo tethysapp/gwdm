@@ -575,6 +575,7 @@ var LIBRARY_OBJECT = (function() {
         var xhr = ajax_update_database("get-wms-datasets", data);
         xhr.done(function(return_data) {
             if ("success" in return_data) {
+                console.log(return_data);
                 $("#select-interpolation").html('');
                 // $("#select-interpolation").prop("selected", false);
                 var empty_opt = '<option value="" selected disabled>Select item...</option>';
@@ -585,6 +586,8 @@ var LIBRARY_OBJECT = (function() {
                     var wms_option = new Option(attr[1], attr[0]);
                     $("#select-interpolation").append(wms_option);
                 });
+            }else{
+                console.log(return_data);
             }
         });
     };

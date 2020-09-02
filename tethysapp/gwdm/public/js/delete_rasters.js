@@ -140,6 +140,12 @@ var LIBRARY_OBJECT = (function() {
     // the DOM tree finishes loading
     $(function() {
         init_all();
+        var var_empty_opt = '<option value="" selected disabled>Select item...</option>';
+        var all_var_opt = new Option('All Variables', 'all');
+        $("#variable-select").prepend(all_var_opt);
+        $("#variable-select").prepend(var_empty_opt);
+
+
         $("#region-select").change(function(){
             var region = $("#region-select option:selected").val();
             var xhr = ajax_update_database("get-aquifers", {'id': region}); //Submitting the data through the ajax function, see main.js for the helper function.
@@ -148,27 +154,27 @@ var LIBRARY_OBJECT = (function() {
                     var options = return_data["aquifers_list"];
                     var var_options = return_data["variables_list"];
                     $("#aquifer-select").html('');
-                    $("#variable-select").html('');
+                    // $("#variable-select").html('');
                     $("#aquifer-select").val(null).trigger('change.select2');
-                    $("#variable-select").val(null).trigger('change.select2');
-                    $("#variable-select").select2({'multiple': true,  placeholder: "Select a Variable(s)"});
+                    // $("#variable-select").val(null).trigger('change.select2');
+                    // $("#variable-select").select2({'multiple': true,  placeholder: "Select a Variable(s)"});
                     $("#aquifer-select").select2({'multiple': false,  placeholder: "Select an Aquifer(s)"});
                     var empty_opt = '<option value="" selected disabled>Select item...</option>';
                     // var var_empty_opt = '<option value="" selected disabled>Select item...</option>';
                     var all_opt = new Option('All Aquifers', 'all');
-                    var all_var_opt = new Option('All Variables', 'all');
+                    // var all_var_opt = new Option('All Variables', 'all');
                     $("#aquifer-select").append(empty_opt);
                     $("#aquifer-select").append(all_opt);
                     // $("#variable-select").append(var_empty_opt);
-                    $("#variable-select").append(all_var_opt);
+                    // $("#variable-select").append(all_var_opt);
                     options.forEach(function(attr,i){
                         var aquifer_option = new Option(attr[0], attr[1]);
                         $("#aquifer-select").append(aquifer_option);
                     });
-                    var_options.forEach(function(attr, i){
-                        var var_option = new Option(attr[0], attr[1]);
-                        $("#variable-select").append(var_option);
-                    });
+                    // var_options.forEach(function(attr, i){
+                    //     var var_option = new Option(attr[0], attr[1]);
+                    //     $("#variable-select").append(var_option);
+                    // });
 
                 }else{
                     addErrorMessage(return_data['error']);

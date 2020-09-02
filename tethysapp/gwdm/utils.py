@@ -176,9 +176,11 @@ def get_region_variables_list(region_id: Union[int, None]) -> List:
                      .distinct()
                      )
         variable_list = [(f'{variable.name}, {variable.units}', variable.id) for variable in variables]
+        if len(variable_list) == 0:
+            variable_list = get_variable_list()
         session.close()
     else:
-        variable_list = []
+        variable_list = get_variable_list()
     return variable_list
 
 
@@ -822,7 +824,6 @@ def get_wms_datasets(aquifer_name: str, variable_id: str, region_id: str) -> Lis
     aquifer_name = aquifer_name.replace(" ", "_")
     c = Crawl(catalog.catalog_url)
     file_str = f'{region_id}/{aquifer_name}/{aquifer_name}_{variable_id}'
-
     urls = [[s.get("url"), d.name] for d in c.datasets for s in d.services
             if s.get("service").lower() == "wms" and file_str in s.get("url")]
 
@@ -845,6 +846,9 @@ def get_wms_metadata(aquifer_name: str, file_name: str, region_id: str) -> Tuple
     # aquifer_dir = os.path.join(thredds_directory, str(region_id), str(aquifer_obj[1]))
     aquifer_name = aquifer_name.replace(" ", "_")
     file_path = os.path.join(thredds_directory, str(region_id), aquifer_name, file_name)
+    # for val in rename_ds['Week'].values:
+    #     print(datetime.strptime(f'2019 {val - 1}  0', "%Y %W %w").toordinal())
+
     ds = xr.open_dataset(file_path)
     range_min = int(ds.tsvalue.min().values)
     range_max = int(ds.tsvalue.max().values)
