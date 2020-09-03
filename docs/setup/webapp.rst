@@ -36,6 +36,7 @@ You will have to install docker through the Docker documentation. Then use the t
 
 - Thredds Options
     * Enter the options as you see fit. Be sure to link the thredds public directory to the thredds directory that was just created.
+    * Replace the catalog.xml and threddsConfig.xml in the Thredds main directory with the files from the repo under the public/data/thredds directory.
 
 **Optional Tools to help with development**
 
@@ -106,3 +107,72 @@ Home › Tethys Apps › Installed Apps › Groundwater Data Mapper
         *   Endpoint: http://127.0.0.1:8383/thredds/
         *   Username: admin
         *   Password: pass
+
+**Syncstores**
+
+Once the Web Admin is setup you need to syncstores to initialize the database. Make sure your tethys environment is active. Then run this command.
+
+
+::
+
+    tethys syncstores gwdm
+
+**Setup GeoServer**
+
+We need to create workspace, store, and layers in the GeoServer for visualizing regions, aquifers, and wells. Login to the Geoserver.
+
+- Create Workspace
+
+    * Click on "Workspaces" link in the side panel
+    * Click on "Add new Workspace" at the top
+    * Under "Name" enter gwdm
+    * Under "Namespace URI" enter gwdm
+    * Save workspace
+
+- Create Store
+
+    * Click on "Stores" link in the side panel
+    * Click on "Add new Store" at the top
+    * Click on "Postgis"
+    * Select "gwdm" from the workspace dropdown
+    * Under "Data Source Name \*" enter postgis
+    * Check the "Enabled" checkbox
+    * Under "dbtype \*" enter postgis
+    * Under "host \*", if using local docker instance enter 172.17.0.1, else enter the IP address of the external GeoServer
+    * Under "port \*" enter 5435 or the appropriate postgis database port for your instance
+    * Under "database" enter gwdm_gwdb
+    * Under "schema" enter public
+    * Under "user \*" enter postgres or the appropriate super user name for your db instance
+    * Under "passwd" enter pass or the appropriate super user password for your db
+    * Leave the remaining defaults and Click Save
+
+- Create Layers
+
+    * Click on "Layers" link in the side panel
+    * Click on "Add a new resource" at the top
+    * Select gwdm:postgis from the dropdown
+    * We will be publishing aquifer, region, and well layers
+    * Repeat the following process for all three layers
+    * Click on "Publish"
+    * Go down to "Bounding Boxes"
+    * Click on "Compute from data"
+    * Click on "Compute from native bounds"
+    * Click on the "Publishing" tab at the top
+    * Go down to "Default Style" and select polygon (for aquifer, region) or point (for well)
+    * Click on Save
+    * Repeat the publish process for region and well
+
+Congratulations! The app is now configured for use. Go to the "Configure App" page in the app to finalize that everything is configured properly.
+
+Installation for Production
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Follow the instructions for production installation on the Tethys documentation:
+http://docs.tethysplatform.org/en/stable/installation/production/app_installation.html
+
+- Main Differences for Production Installation
+
+    * Instead of "tethys install -d" you run "tethys install"
+    * Collect static workspaces
+
+- Setup docker, web admin setup, syncstores, geoserver the same way as listed in the local app development above.

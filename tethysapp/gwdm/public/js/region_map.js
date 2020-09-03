@@ -105,7 +105,6 @@ var LIBRARY_OBJECT = (function() {
         $threddsUrl = $("#thredds-text-input").val();
         region = $("#region-text-input").val();
         user_status = $("#user-info").attr('user-status');
-        console.log(user_status);
     };
 
 
@@ -744,8 +743,10 @@ var LIBRARY_OBJECT = (function() {
                 thousandsSep: ','
             }
         });
-        var aquifer_empty_opt = '<option value="" disabled selected="selected">Select Aquifer...</option>';
+
+        var aquifer_empty_opt = '<option value="" selected disabled>Select Aquifer...</option>';
         $("#aquifer-select").prepend(aquifer_empty_opt);
+        $('#aquifer-select').select2('val', '');
         $("#aquifer-select").change(function(){
             var aquifer_id = $("#aquifer-select option:selected").val();
             var variable_id = $("#variable-select option:selected").val();
