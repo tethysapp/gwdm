@@ -1,9 +1,10 @@
 from setuptools import setup, find_namespace_packages
-from tethys_apps.app_installation import find_resource_files
+from setup_helper import find_resource_files
 
 # -- Apps Definition -- #
 app_package = 'gwdm'
 release_package = 'tethysapp-' + app_package
+resource_files = find_resource_files('tethysapp/' + app_package + '/scripts', 'tethysapp/' + app_package)
 
 # -- Python Dependencies -- #
 dependencies = []
