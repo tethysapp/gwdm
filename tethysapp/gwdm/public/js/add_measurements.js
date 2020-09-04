@@ -50,7 +50,7 @@ var LIBRARY_OBJECT = (function() {
             $("#format-text-input").val('');
             $("#aquifer_attributes").val('');
             reset_dropdown();
-            addSuccessMessage('measurements Upload Complete!');
+            addSuccessMessage('Measurements Upload Complete!');
         }
     };
 
@@ -211,6 +211,8 @@ var LIBRARY_OBJECT = (function() {
     $(function() {
         init_all();
         window.onbeforeunload = null;
+        $('#variable-select').select2('val', '');
+
         $("#region-select").change(function(){
             var region = $("#region-select option:selected").val();
             var xhr = ajax_update_database("get-aquifers", {'id': region}); //Submitting the data through the ajax function, see main.js for the helper function.

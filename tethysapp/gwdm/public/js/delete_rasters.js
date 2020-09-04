@@ -144,7 +144,7 @@ var LIBRARY_OBJECT = (function() {
         var all_var_opt = new Option('All Variables', 'all');
         $("#variable-select").prepend(all_var_opt);
         $("#variable-select").prepend(var_empty_opt);
-
+        $('#variable-select').select2('val', '');
 
         $("#region-select").change(function(){
             var region = $("#region-select option:selected").val();

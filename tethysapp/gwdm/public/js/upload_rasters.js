@@ -118,6 +118,8 @@ var LIBRARY_OBJECT = (function() {
     // the DOM tree finishes loading
     $(function() {
         init_all();
+        $('#variable-select').select2('val', '');
+
         $("#region-select").change(function(){
             var region = $("#region-select option:selected").val();
             var xhr = ajax_update_database("get-aquifers", {'id': region}); //Submitting the data through the ajax function, see main.js for the helper function.

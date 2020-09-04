@@ -212,6 +212,8 @@ var LIBRARY_OBJECT = (function() {
                         var var_option = new Option(attr[0], attr[1]);
                         $("#variable-select").append(var_option);
                     });
+                    $('#variable-select').select2('val', '');
+
                 }else{
                     addErrorMessage(return_data['error']);
                 }
