@@ -574,18 +574,21 @@ def region_well_obs(request):
     """
     response = {}
     if request.is_ajax() and request.method == 'POST':
-        info = request.POST
-        aquifer_id = int(info.get('aquifer_id'))
-        variable_id = info.get('variable_id')
-        if variable_id is not None:
-            well_obs = get_well_obs(aquifer_id, int(variable_id))
-        else:
-            well_obs = []
-        response['obs_dict'] = well_obs
-        if len(well_obs) > 0:
-            response['min_obs'] = min(well_obs.values())
-            response['max_obs'] = max(well_obs.values())
-        response['success'] = 'success'
+        try:
+            info = request.POST
+            aquifer_id = int(info.get('aquifer_id'))
+            variable_id = info.get('variable_id')
+            if variable_id is not None:
+                well_obs = get_well_obs(aquifer_id, int(variable_id))
+            else:
+                well_obs = []
+            response['obs_dict'] = well_obs
+            if len(well_obs) > 0:
+                response['min_obs'] = min(well_obs.values())
+                response['max_obs'] = max(well_obs.values())
+            response['success'] = 'success'
+        except Exception as e:
+            response['error'] = str(e)
 
     return JsonResponse(response)
 

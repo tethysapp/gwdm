@@ -349,6 +349,12 @@ class Gwdm(TethysAppBase):
                 description='Path to the Ground Water Thredds Directory',
                 required=True
             ),
+            CustomSetting(
+                name='gw_thredds_catalog',
+                type=CustomSetting.TYPE_STRING,
+                description='Path to the Ground Water Thredds Catalog XML URL',
+                required=True
+            ),
         )
 
         return custom_settings
