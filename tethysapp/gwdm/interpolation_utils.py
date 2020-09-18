@@ -59,6 +59,7 @@ def smooth(y, box_size):
 
 
 def extract_well_data(name, well_df, end_date, min_samples):
+
     if len(well_df) >= min_samples:
         # if (well_df['date'].min() < start_date) and (well_df['date'].max() > end_date):
         # elevation = well_df['gse'].unique()[0]
@@ -165,6 +166,14 @@ def get_thredds_value(server, layer, bbox):
     return df
 
 
+def sat_cumsum(combined_df, names):
+    combined_df['pdsi_int'] = (combined_df['pdsi'] - combined_df['pdsi'].mean()).cumsum()
+    combined_df['soilw_int'] = (combined_df['soilw'] - combined_df['soilw'].mean()).cumsum()
+    names.append('pdsi_int')  # add new column name
+    names.append('soilw_int')  # add new column name
+    return combined_df, names
+
+
 def sat_resample(gldas_df):
     # resamples the data from both datasets to a monthly value,
     # uses the mean of all measurements in a month
@@ -218,6 +227,8 @@ def predict(in_values, W_in, b, W_out):
 def impute_data(comb_df, well_names, names):
     # for out test set we will impute everything
     imputed_df = pd.DataFrame(index=comb_df.index)
+    print('well names', well_names)
+    print('names', names)
     for well in well_names:  # list of the wells in the aquifer
         train_nona_df = comb_df.dropna(subset=[well])  # drop any rows with na in well (measured) data
         labels_df = train_nona_df[well]  # measured data used as "labels" or truth in training
@@ -225,6 +236,9 @@ def impute_data(comb_df, well_names, names):
         all_tx_df = comb_df[names]  # data over the full period, will use for imputation
 
         tx = tx_df.values  # convert to an array
+        # print(len(tx))
+        print('Well Number ', well)
+        print(tx.shape)
         x1 = np.column_stack(np.ones(tx.shape[0])).T  # bias vector of 1's
         tx = np.hstack((tx, x1))  # training matrix
         ty = labels_df.values
@@ -233,7 +247,6 @@ def impute_data(comb_df, well_names, names):
         lamb_value = 100
         W_in = np.random.normal(size=[input_length, hidden_units])
         b = np.random.normal(size=[hidden_units])
-        print('Well Number ', well)
 
         # now do the matrix multiplication
         X = input_to_hidden(tx, W_in, b)  # setup matrix for multiplication, it is a function
@@ -536,25 +549,49 @@ def mlr_interpolation(mlr_dict):
     gldas_df = pd.concat([pdsi_df, soilw_df], join="outer", axis=1)
     gldas_df = sat_resample(gldas_df)
     gldas_df, names = sat_rolling_window(YEARS, gldas_df)
+    # gldas_df = pd.read_csv('/home/dev/NewCodeAndFiles/gldas.csv', index_col='Index', parse_dates=True)
+    # names = list(gldas_df)
     print('gldas', gldas_df)
-
+    print(gldas_df.index)
+    # gldas_df.to_csv('gldas.csv')
+    gldas_df.dropna(inplace=True)
     wells_df = pd.concat([extract_well_data(name, group, end_date, min_samples)
                           for name, group in measurements_df.groupby('well_id')], axis=1, sort=False)
     print('wells_df', wells_df)
     wells_df.drop_duplicates(inplace=True)
-    well_names = wells_df.columns
+    wells_df.dropna(thresh=min_samples, axis=1, inplace=True)  # thresh is the min number of data points
     # wells_df.to_csv('wells_df.csv')
     well_interp_df = interp_well(wells_df, gap_size, pad, spacing)
+    well_interp_df.dropna(thresh=min_samples, axis=1, inplace=True)
+    well_names = well_interp_df.columns
+    well_interp_df.to_csv('well_interp.csv')
+    # break
     print('well_interp_df', well_interp_df)
+    # find the start of the well data
+    beg_well_data = well_interp_df.notna().idxmax().min()
+    print('beg well data ', beg_well_data)
+    origwelldata_df = well_interp_df[well_interp_df.index > beg_well_data]  # start of well data
     # well_interp_df.to_csv('well_interp.csv')
     # combine the  data from the wells and the satellite observations  to a single dataframe (combined_df)
     # this will have a row for every measurement (on the start of the month) a column for each well,
     # and a column for pdsi and soilw and their rolling averages, and potentially offsets
     combined_df = pd.concat([well_interp_df, gldas_df], join="outer", axis=1, sort=False)
+    combined_df.to_csv('combined_1.csv')
+    print(combined_df.index)
+    combined_df = combined_df[combined_df.index > beg_well_data]
     combined_df.dropna(subset=names, inplace=True)  # drop rows where there are no satellite data
-    print('combined_df', combined_df)
+    # add cumulative sums of the drought indexes to the combined data
+    combined_df.to_csv('combined_2.csv')
+    print('drop nulls for combined', combined_df)
+    combined_df, names = sat_cumsum(combined_df, names)
+    combined_df['year'] = combined_df.index.year + (combined_df.index.month - 1) / 12  # add linear trend (decimal years)
+    names.append('year')
+    combined_df.to_csv('combined_3.csv')
+    combined_df.dropna(thresh=min_samples, axis=1, inplace=True)
     norm_df = norm_training_data(combined_df, combined_df)
     print('norm_df', norm_df)
+    norm_df.to_csv('norm.csv')
+    well_names = list(set(combined_df) - set(names))
     imputed_norm_df = impute_data(norm_df, well_names, names)
     ref_df = combined_df[well_names]
     imputed_df = renorm_data(imputed_norm_df, ref_df)
