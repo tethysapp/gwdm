@@ -340,7 +340,7 @@ var LIBRARY_OBJECT = (function() {
                     "opacity": 1,
                     "fillOpacity": 0
                 };
-                var feature = L.geoJSON(response, {style: myStyle}).addTo(regionGroup);
+                var feature = L.geoJSON(response, {style: myStyle, interactive: false}).addTo(regionGroup);
                 map.fitBounds(feature.getBounds());
                 return callback(region_id);
                 // console.log(region_aquifers);
@@ -423,7 +423,7 @@ var LIBRARY_OBJECT = (function() {
                     "opacity": 1,
                     "fillOpacity": 0
                 };
-                var feature = L.geoJSON(response, {style: myStyle}).addTo(aquiferGroup);
+                var feature = L.geoJSON(response, {style: myStyle, interactive: false}).addTo(aquiferGroup);
                 map.fitBounds(feature.getBounds());
             }
         });
