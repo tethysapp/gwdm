@@ -50,7 +50,7 @@ var LIBRARY_OBJECT = (function() {
             $("#format-text-input").val('');
             $("#aquifer_attributes").val('');
             reset_dropdown();
-            addSuccessMessage('Measurements Upload Complete!');
+            // addSuccessMessage('Measurements Upload Complete!');
         }
     };
 
@@ -170,6 +170,7 @@ var LIBRARY_OBJECT = (function() {
         xhr.done(function(return_data){ //Reset the form once the data is added successfully
             if("success" in return_data){
                 submit_button.html(submit_button_html);
+                addSuccessMessage(return_data["success"]);
                 reset_form(return_data);
                 console.log(return_data);
             }else{

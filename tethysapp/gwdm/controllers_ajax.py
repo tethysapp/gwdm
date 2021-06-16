@@ -713,29 +713,29 @@ def interpolate(request):
     response = {}
     if request.is_ajax() and request.method == 'POST':
         # get/check information from AJAX request
-        try:
-            post_info = request.POST
-            scheduler = get_scheduler(name='dask_local')
+        # try:
+        post_info = request.POST
+        # scheduler = get_scheduler(name='dask_local')
 
-            info_dict = post_info.dict()
-            result = process_interpolation(info_dict)
-            # from .job_functions import delayed_job
-            # #
-            # # Create dask delayed object
-            # delayed = delayed_job(info_dict)
-            # dask = job_manager.create_job(
-            #     job_type='DASK',
-            #     name='dask_delayed',
-            #     user=request.user,
-            #     scheduler=scheduler,
-            # )
-            #
-            # # Execute future
-            # dask.execute(delayed)
-            response['success'] = 'success'
-            response['result'] = result
-        except Exception as e:
-            response['error'] = str(e)
+        info_dict = post_info.dict()
+        result = process_interpolation(info_dict)
+        # from .job_functions import delayed_job
+        # #
+        # # Create dask delayed object
+        # delayed = delayed_job(info_dict)
+        # dask = job_manager.create_job(
+        #     job_type='DASK',
+        #     name='dask_delayed',
+        #     user=request.user,
+        #     scheduler=scheduler,
+        # )
+        #
+        # # Execute future
+        # dask.execute(delayed)
+        response['success'] = 'success'
+        response['result'] = result
+        # except Exception as e:
+        #     response['error'] = str(e)
 
         return JsonResponse(response)
 

@@ -272,6 +272,18 @@ def get_num_measurements() -> int:
     return measurements
 
 
+def get_num_rasters() -> int:
+    """
+    Get a list of all the rasters in the thredds directory
+
+    Returns:
+        The total number of rasters in the app
+    """
+    thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+    num_rasters = sum([len(files) for r, d, files in os.walk(thredds_directory)])
+    return int(num_rasters)
+
+
 def get_region_variable_select(region_id: Union[int, None]) -> Any:
     """
     Generate a Variable Select Tethys Gizmo
@@ -683,11 +695,19 @@ def process_measurements_file(region_id: int,
             well_ids = list(gdf['well_id'].unique().astype(str))
             wells = (session.query(Well).filter(Well.well_id.in_(well_ids),
                                                 Well.aquifer_id.in_(aquifer_ids)).all())
-
             well_dict = {well.well_id: well.id for well in wells}
             gdf['well_id'] = gdf['well_id'].astype(str)
             gdf['well_id'] = gdf['well_id'].map(well_dict)
-            gdf.dropna(subset=['time', 'value'], inplace=True)
+            before_filtering = len(gdf)
+            unique_wells_before = gdf.well_id.nunique()
+            print(unique_wells_before)
+            gdf.dropna(subset=['time', 'value', 'well_id'], inplace=True)
+            after_filtering = len(gdf)
+            unique_wells_after = gdf.well_id.nunique()
+            print(unique_wells_after)
+            wells_dropped = unique_wells_before - unique_wells_after
+            print(wells_dropped)
+            observations_dropped = before_filtering - after_filtering
             for row in gdf.itertuples():
                 measurement = Measurement(well_id=int(row.well_id),
                                           variable_id=int(row.variable_id),
@@ -698,7 +718,8 @@ def process_measurements_file(region_id: int,
                 session.add(measurement)
             session.commit()
             session.close()
-            response = {'success': 'success'}
+            response = {'success': f'Success. Number of observations dropped: {observations_dropped}. '
+                                   f'Number of wells dropped: {wells_dropped}'}
         else:
             response = {'error': 'There were null values in the data. Please fix the data and upload again.'}
     except Exception as e:
@@ -850,8 +871,10 @@ def get_wms_metadata(aquifer_name: str, file_name: str, region_id: str) -> Tuple
     #     print(datetime.strptime(f'2019 {val - 1}  0', "%Y %W %w").toordinal())
 
     ds = xr.open_dataset(file_path)
-    range_min = int(ds.tsvalue.min().values)
-    range_max = int(ds.tsvalue.max().values)
+    # range_min = int(ds.tsvalue.min().values)
+    # range_max = int(ds.tsvalue.max().values)
+    range_min = float(ds.tsvalue.min().values)
+    range_max = float(ds.tsvalue.max().values)
     return range_min, range_max
 
 

@@ -14,6 +14,7 @@ from .utils import (get_regions,
                     get_thredds_status,
                     get_num_wells,
                     get_num_measurements,
+                    get_num_rasters,
                     get_variable_list,
                     get_metrics,
                     geoserver_text_gizmo,
@@ -77,6 +78,7 @@ def metrics(request):
     num_aquifers = len(aquifers_list)
     num_wells = get_num_wells()
     num_measurements = get_num_measurements()
+    num_rasters = get_num_rasters()
     metrics_plot = PlotlyView(get_metrics(), show_link=True)
 
     context = {
@@ -85,6 +87,7 @@ def metrics(request):
         'num_aquifers': num_aquifers,
         'num_wells': num_wells,
         'num_measurements': num_measurements,
+        'num_rasters': num_rasters,
         'metrics_plot': metrics_plot
     }
 
