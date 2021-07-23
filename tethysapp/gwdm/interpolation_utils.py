@@ -21,6 +21,7 @@ import pandas as pd
 import scipy.interpolate as sci_intrp
 import xarray
 import rioxarray
+import re
 from geoalchemy2 import functions as gf2
 from scipy import interpolate
 from shapely import wkt
@@ -224,21 +225,16 @@ def predict(in_values, W_in, b, W_out):
     return y
 
 
-def impute_data(comb_df, well_names, names):
+def impute_data(train_df, test_df, wellnames, names):
     # for out test set we will impute everything
-    imputed_df = pd.DataFrame(index=comb_df.index)
-    print('well names', well_names)
-    print('names', names)
-    for well in well_names:  # list of the wells in the aquifer
-        train_nona_df = comb_df.dropna(subset=[well])  # drop any rows with na in well (measured) data
+    imputed_df = pd.DataFrame(index=test_df.index)
+    for well in wellnames:  # list of the wells in the aquifer
+        train_nona_df = train_df.dropna(subset=[well])  # drop any rows with na in well (measured) data
         labels_df = train_nona_df[well]  # measured data used as "labels" or truth in training
         tx_df = train_nona_df[names]  # data we will predict with only over the test period
-        all_tx_df = comb_df[names]  # data over the full period, will use for imputation
+        all_tx_df = test_df[names]  # data over the full period, will use for imputation
 
         tx = tx_df.values  # convert to an array
-        # print(len(tx))
-        print('Well Number ', well)
-        print(tx.shape)
         x1 = np.column_stack(np.ones(tx.shape[0])).T  # bias vector of 1's
         tx = np.hstack((tx, x1))  # training matrix
         ty = labels_df.values
@@ -542,6 +538,8 @@ def mlr_interpolation(mlr_dict):
 
     start_date = datetime.datetime(mlr_dict['start_date'], 1, 1)
     end_date = datetime.datetime(mlr_dict['end_date'], 1, 1)
+    start_year = mlr_dict['start_date']
+    end_year = mlr_dict['end_date']
 
     bbox, wells_query_df, measurements_df, aquifer_obj = extract_query_objects(region_id, aquifer_id, variable)
     pdsi_df = get_thredds_value(SERVER1, LAYER1, bbox)  # pdsi values
@@ -578,21 +576,32 @@ def mlr_interpolation(mlr_dict):
     combined_df = pd.concat([well_interp_df, gldas_df], join="outer", axis=1, sort=False)
     combined_df.to_csv('combined_1.csv')
     print(combined_df.index)
-    combined_df = combined_df[combined_df.index > beg_well_data]
+    orig_df = combined_df.copy()
+
+    combined_df = orig_df.dropna(axis=1, thresh=3)
+    dropped_col = orig_df.shape[1] - combined_df.shape[1]
+    all_names = [str(x) for x in list(combined_df.columns)]
+    sat_pat = re.compile('pdsi|soilw')  # pattern to look for satellite data column names
+    names = list(filter(sat_pat.match, all_names))  # list of the column names with sat data
+    names = [int(ele) if ele.isdigit() else ele for ele in names]
+    well_names = [ele for ele in list(combined_df.columns) if ele not in names]
+    print(names)
+    print(well_names)
+    # combined_df = combined_df[combined_df.index > beg_well_data]
     combined_df.dropna(subset=names, inplace=True)  # drop rows where there are no satellite data
-    # add cumulative sums of the drought indexes to the combined data
-    combined_df.to_csv('combined_2.csv')
-    print('drop nulls for combined', combined_df)
-    combined_df, names = sat_cumsum(combined_df, names)
-    combined_df['year'] = combined_df.index.year + (combined_df.index.month - 1) / 12  # add linear trend (decimal years)
-    names.append('year')
-    combined_df.to_csv('combined_3.csv')
-    combined_df.dropna(thresh=min_samples, axis=1, inplace=True)
+    # # add cumulative sums of the drought indexes to the combined data
+    # combined_df.to_csv('combined_2.csv')
+    # print('drop nulls for combined', combined_df)
+    # combined_df, names = sat_cumsum(combined_df, names)
+    # combined_df['year'] = combined_df.index.year + (combined_df.index.month - 1) / 12  # add linear trend (decimal years)
+    # names.append('year')
+    # combined_df.to_csv('combined_3.csv')
+    # combined_df.dropna(thresh=min_samples, axis=1, inplace=True)
     norm_df = norm_training_data(combined_df, combined_df)
     print('norm_df', norm_df)
     norm_df.to_csv('norm.csv')
-    well_names = list(set(combined_df) - set(names))
-    imputed_norm_df = impute_data(norm_df, well_names, names)
+    # well_names = list(set(combined_df) - set(names))
+    imputed_norm_df = impute_data(norm_df, norm_df, well_names, names)
     ref_df = combined_df[well_names]
     imputed_df = renorm_data(imputed_norm_df, ref_df)
     # print(imputed_df)
@@ -612,9 +621,9 @@ def mlr_interpolation(mlr_dict):
     years_df = imputed_df.iloc[::skip_month].T  # extract every nth month of data and transpose array
     print(len(years_df))
     aquifer_name = aquifer_obj[1].replace(" ", "_")
-    file_name = f'{aquifer_name}_{variable}_{time.time()}.nc'
-    # setup a netcdf file to store the time series of rasters
-    #
+
+    file_name = f'{aquifer_name}_{variable}_{start_year}_{end_year}_{time.time()}.nc'
+
     nc_file_path = generate_nc_file(file_name, grid_x, grid_y, years_df, coords_df, x_coords, y_coords)
     final_nc_path = clip_nc_file(nc_file_path, aquifer_obj, region_id)
     return final_nc_path

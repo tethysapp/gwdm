@@ -541,6 +541,9 @@ var LIBRARY_OBJECT = (function() {
     generate_chart = function(result){
         var variable_name = $("#variable-select option:selected").text();
         Highcharts.stockChart('chart',{
+            chart:{
+                type: 'spline'
+            },
             title: {
                 text: result['well_info']["well_name"]+ variable_name + " values",
                 style: {
@@ -581,7 +584,7 @@ var LIBRARY_OBJECT = (function() {
                 $("#select-interpolation").val('').trigger('change');
                 var wms_options = return_data['wms_files'];
                 wms_options.forEach(function(attr,i){
-                    var wms_option = new Option(attr[1], attr[0]);
+                    var wms_option = new Option(attr[0], attr[1]);
                     $("#select-interpolation").append(wms_option);
                 });
             }else{

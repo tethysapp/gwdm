@@ -19,7 +19,7 @@ from shapely import wkt
 from sqlalchemy.sql import func
 from tethys_sdk.gizmos import (TextInput,
                                SelectInput)
-from thredds_crawler.crawl import Crawl
+from siphon.catalog import TDSCatalog
 
 from .app import Gwdm as app
 from .model import (Region,
@@ -843,10 +843,14 @@ def get_wms_datasets(aquifer_name: str, variable_id: str, region_id: str) -> Lis
     """
     catalog = app.get_custom_setting('gw_thredds_catalog')
     aquifer_name = aquifer_name.replace(" ", "_")
-    c = Crawl(catalog)
-    file_str = f'{region_id}/{aquifer_name}/{aquifer_name}_{variable_id}'
-    urls = [[s.get("url"), d.name] for d in c.datasets for s in d.services
-            if s.get("service").lower() == "wms" and file_str in s.get("url")]
+    c = TDSCatalog(catalog)
+    # file_str = f'{region_id}/{aquifer_name}/{aquifer_name}_{variable_id}'
+    try:
+        urls = [[name, ds.access_urls['WMS']] for name, ds in
+                c.catalog_refs[f'{region_id}'].follow().catalog_refs[f'{aquifer_name}'].follow().datasets.items()
+                if variable_id in name]
+    except KeyError:
+        urls = []
 
     return urls
 
