@@ -1,6 +1,7 @@
 import calendar
 import json
 import os
+import re
 import glob
 import shutil
 import time
@@ -175,13 +176,25 @@ def get_region_variables_list(region_id: Union[int, None]) -> List:
                      .filter(Aquifer.region_id == region_id)
                      .distinct()
                      )
-        variable_list = [(f'{variable.name}, {variable.units}', variable.id) for variable in variables]
-        if len(variable_list) == 0:
-            variable_list = get_variable_list()
-        session.close()
+        region_variables_list = [(f'{variable.name}, {variable.units}', variable.id) for variable in variables]
+        thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+        thredds_vars = list({int(re.findall('_\d_', _file)[0][1])
+                             for _file in glob.glob(os.path.join(thredds_directory, f'{region_id}', '*', '*.nc'))})
+        all_variables_list = get_variable_list()
+        variables_dict = dict(all_variables_list)
+        for _var in thredds_vars:
+            if _var not in dict(region_variables_list).values():
+                var_tuple = (list(variables_dict.keys())[list(variables_dict.values()).index(_var)], _var)
+                region_variables_list.append(var_tuple)
+
+        if len(region_variables_list) == 0:
+            variable_list = all_variables_list
+            return variable_list
+        else:
+            return region_variables_list
     else:
         variable_list = get_variable_list()
-    return variable_list
+        return variable_list
 
 
 def get_metrics() -> Any:
@@ -848,7 +861,7 @@ def get_wms_datasets(aquifer_name: str, variable_id: str, region_id: str) -> Lis
     try:
         urls = [[name, ds.access_urls['WMS']] for name, ds in
                 c.catalog_refs[f'{region_id}'].follow().catalog_refs[f'{aquifer_name}'].follow().datasets.items()
-                if variable_id in name]
+                if f'_{variable_id}_' in name]
     except KeyError:
         urls = []
 
