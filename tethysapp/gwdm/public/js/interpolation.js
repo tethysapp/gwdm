@@ -39,7 +39,7 @@ var LIBRARY_OBJECT = (function() {
     //Reset the form when the request is made succesfully
     reset_form = function(result){
         if("success" in result){
-            addSuccessMessage('Interpolation Complete!');
+            addSuccessMessage(result["message"]);
         }
     };
 

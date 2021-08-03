@@ -713,29 +713,19 @@ def interpolate(request):
     response = {}
     if request.is_ajax() and request.method == 'POST':
         # get/check information from AJAX request
-        # try:
-        post_info = request.POST
-        # scheduler = get_scheduler(name='dask_local')
-
-        info_dict = post_info.dict()
-        result = process_interpolation(info_dict)
-        # from .job_functions import delayed_job
-        # #
-        # # Create dask delayed object
-        # delayed = delayed_job(info_dict)
-        # dask = job_manager.create_job(
-        #     job_type='DASK',
-        #     name='dask_delayed',
-        #     user=request.user,
-        #     scheduler=scheduler,
-        # )
-        #
-        # # Execute future
-        # dask.execute(delayed)
-        response['success'] = 'success'
-        response['result'] = result
-        # except Exception as e:
-        #     response['error'] = str(e)
+        try:
+            post_info = request.POST
+            info_dict = post_info.dict()
+            result = process_interpolation(info_dict)
+            response['total_time'] = f'{(result["total_time"]/60)} minutes'
+            response['succeeded'] = result['success']
+            response['failed'] = result['failed']
+            response['success'] = 'success'
+            response['message'] = f'Total Time: {round(result["total_time"]/60, 2)} minutes,' \
+                                  f' Aquifers Succeeded: {result["success"]},' \
+                                  f' Aquifers Failed: {result["failed"]}'
+        except Exception as e:
+            response['error'] = str(e)
 
         return JsonResponse(response)
 
@@ -773,7 +763,6 @@ def region_wms_metadata(request):
         response['success'] = 'success'
         response['range_min'] = range_min
         response['range_max'] = range_max
-        # response['wms_files'] = well_files
 
     return JsonResponse(response)
 

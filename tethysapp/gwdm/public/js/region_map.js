@@ -544,6 +544,17 @@ var LIBRARY_OBJECT = (function() {
             chart:{
                 type: 'spline'
             },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true
+                    },
+                    marker: {
+                        enabled: true,
+                        radius: 6
+                    }
+                }
+            },
             title: {
                 text: result['well_info']["well_name"]+ variable_name + " values",
                 style: {

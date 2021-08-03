@@ -21,7 +21,6 @@ import pandas as pd
 import scipy.interpolate as sci_intrp
 import xarray
 import rioxarray
-import re
 from geoalchemy2 import functions as gf2
 from scipy import interpolate
 from shapely import wkt
@@ -60,7 +59,6 @@ def smooth(y, box_size):
 
 
 def extract_well_data(name, well_df, end_date, min_samples):
-
     if len(well_df) >= min_samples:
         # if (well_df['date'].min() < start_date) and (well_df['date'].max() > end_date):
         # elevation = well_df['gse'].unique()[0]
@@ -167,14 +165,6 @@ def get_thredds_value(server, layer, bbox):
     return df
 
 
-def sat_cumsum(combined_df, names):
-    combined_df['pdsi_int'] = (combined_df['pdsi'] - combined_df['pdsi'].mean()).cumsum()
-    combined_df['soilw_int'] = (combined_df['soilw'] - combined_df['soilw'].mean()).cumsum()
-    names.append('pdsi_int')  # add new column name
-    names.append('soilw_int')  # add new column name
-    return combined_df, names
-
-
 def sat_resample(gldas_df):
     # resamples the data from both datasets to a monthly value,
     # uses the mean of all measurements in a month
@@ -187,8 +177,6 @@ def sat_resample(gldas_df):
     gldas_df = gldas_df.resample('MS').first()
     # MS means "month start" or to the start of the month, this is the interpolated value
 
-    # gldas_df.to_hdf('data.h5', key='gldas_df', mode='a')  # append data to the file
-    # print(gldas_df.describe())
     return gldas_df
 
 
@@ -225,14 +213,15 @@ def predict(in_values, W_in, b, W_out):
     return y
 
 
-def impute_data(train_df, test_df, wellnames, names):
+def impute_data(comb_df, well_names, names):
     # for out test set we will impute everything
-    imputed_df = pd.DataFrame(index=test_df.index)
-    for well in wellnames:  # list of the wells in the aquifer
-        train_nona_df = train_df.dropna(subset=[well])  # drop any rows with na in well (measured) data
+    imputed_df = pd.DataFrame(index=comb_df.index)
+
+    for well in well_names:  # list of the wells in the aquifer
+        train_nona_df = comb_df.dropna(subset=[well])  # drop any rows with na in well (measured) data
         labels_df = train_nona_df[well]  # measured data used as "labels" or truth in training
         tx_df = train_nona_df[names]  # data we will predict with only over the test period
-        all_tx_df = test_df[names]  # data over the full period, will use for imputation
+        all_tx_df = comb_df[names]  # data over the full period, will use for imputation
 
         tx = tx_df.values  # convert to an array
         x1 = np.column_stack(np.ones(tx.shape[0])).T  # bias vector of 1's
@@ -364,7 +353,7 @@ def krig_map_generate(var_fitted, x_c, y_c, values, grid_x, grid_y):
 
 def fit_model_var(coords_df, x_c, y_c, values):
     # fit the model varigrom to the experimental variogram
-    bin_num = 40  # number of bins in the experimental variogram
+    bin_num = 20  # number of bins in the experimental variogram
 
     # first get the coords and determine distances
     x_delta = max(x_c) - min(x_c)  # distance across x coords
@@ -383,19 +372,12 @@ def fit_model_var(coords_df, x_c, y_c, values):
     # fit the model variogram
     # potential models are: Gaussian, Exponential, Matern, Rational, Stable, Linear,
     #                       Circular, Spherical, and Intersection
-    fit_var = gs.Stable(dim=2)
-    fit_var.fit_variogram(bin_cent_c, gamma_c, nugget=False, estimator='cressie')  # fit the model variogram
+    # fit_var = gs.Stable(dim=2)
+    # fit_var.fit_variogram(bin_cent_c, gamma_c, nugget=False, estimator='cressie')  # fit the model variogram
 
-    # print('max distance', max_dist,'var len scale', fit_var.len_scale)
-    # check to see of range of varigram is very small (problem with fit), it so, set it to a value
-    # also check to see if it is too long and set it to a value
-    if fit_var.len_scale < max_dist / 3:  # check if too short
-        fit_var.len_scale = max_dist / 3  # set to value
-        # print('too short, set len_scale to: ', max_dist/3)
-    elif fit_var.len_scale > max_dist * 1.5:  # check if too long
-        fit_var.len_scale = max_dist  # set to value
-        # print('too long, set len_scale to: ', max_dist)
-
+    data_var = np.var(values)
+    data_std = np.std(values)
+    fit_var = gs.Stable(dim=2, var=data_var, len_scale=max_dist/4, nugget=data_std)
     plt_var = False
     if plt_var:
         # plot the variogram to show fit and print out variogram paramters
@@ -413,7 +395,6 @@ def extract_query_objects(region_id, aquifer_id, variable):
         Aquifer.region_id == region_id,
         Aquifer.id == aquifer_id).first()
     bbox = wkt.loads(aquifer_obj[0]).bounds
-    print(bbox)
     wells_query = session.query(Well).filter(Well.aquifer_id == aquifer_id)
     wells_query_df = pd.read_sql(wells_query.statement, session.bind)
     well_ids = [int(well_id) for well_id in wells_query_df.id.values]
@@ -456,7 +437,6 @@ def krig_imputed_wells(years_df, coords_df, values, x_coords, y_coords, grid_x, 
 
 
 def generate_nc_file(file_name, grid_x, grid_y, years_df, coords_df, x_coords, y_coords):
-    print('generating netcdf file')
     temp_dir = tempfile.mkdtemp()
     file_path = os.path.join(temp_dir, file_name)
     h = netCDF4.Dataset(file_path, 'w', format="NETCDF4")
@@ -492,13 +472,11 @@ def generate_nc_file(file_name, grid_x, grid_y, years_df, coords_df, x_coords, y
         krig_map = krig_field_generate(var_fitted, x_coords, y_coords, values, grid_x, grid_y)  # krig data
         # krig_map.field provides the 2D array of values
         end_time = timer()
-        print('krig time = ', end_time - beg_time)
         time[time_counter] = measurement.toordinal()
         ts_value[time_counter, :, :] = krig_map.field
         time_counter += 1
 
     h.close()
-    print(file_path)
     return Path(file_path)
 
 
@@ -517,9 +495,6 @@ def clip_nc_file(file_path, aquifer_obj, region_id):
 
     aquifer_geom = wkt.loads(aquifer_obj[0])
     aquifer_gdf = gpd.GeoDataFrame({'name': ['random'], 'geometry': [aquifer_geom]})
-    # aq_geom_str = json.dumps(mapping(aquifer_geom[0]))
-    # print(type(aq_geom_str))
-    # cropping_geometries = [geojson.loads(aq_geom_str)]
     clipped_nc = interp_nc.rio.clip(aquifer_gdf.geometry.apply(mapping), crs=4326, drop=True)
     clipped_nc.to_netcdf(output_file)
     shutil.rmtree(temp_dir)
@@ -538,8 +513,6 @@ def mlr_interpolation(mlr_dict):
 
     start_date = datetime.datetime(mlr_dict['start_date'], 1, 1)
     end_date = datetime.datetime(mlr_dict['end_date'], 1, 1)
-    start_year = mlr_dict['start_date']
-    end_year = mlr_dict['end_date']
 
     bbox, wells_query_df, measurements_df, aquifer_obj = extract_query_objects(region_id, aquifer_id, variable)
     pdsi_df = get_thredds_value(SERVER1, LAYER1, bbox)  # pdsi values
@@ -547,66 +520,29 @@ def mlr_interpolation(mlr_dict):
     gldas_df = pd.concat([pdsi_df, soilw_df], join="outer", axis=1)
     gldas_df = sat_resample(gldas_df)
     gldas_df, names = sat_rolling_window(YEARS, gldas_df)
-    # gldas_df = pd.read_csv('/home/dev/NewCodeAndFiles/gldas.csv', index_col='Index', parse_dates=True)
-    # names = list(gldas_df)
-    print('gldas', gldas_df)
-    print(gldas_df.index)
-    # gldas_df.to_csv('gldas.csv')
-    gldas_df.dropna(inplace=True)
+
     wells_df = pd.concat([extract_well_data(name, group, end_date, min_samples)
                           for name, group in measurements_df.groupby('well_id')], axis=1, sort=False)
-    print('wells_df', wells_df)
     wells_df.drop_duplicates(inplace=True)
-    wells_df.dropna(thresh=min_samples, axis=1, inplace=True)  # thresh is the min number of data points
-    # wells_df.to_csv('wells_df.csv')
+    wells_df.to_csv('wells_one.csv')
+    wells_df.dropna(thresh=min_samples, axis=1, inplace=True)
     well_interp_df = interp_well(wells_df, gap_size, pad, spacing)
     well_interp_df.dropna(thresh=min_samples, axis=1, inplace=True)
-    well_names = well_interp_df.columns
     well_interp_df.to_csv('well_interp.csv')
-    # break
-    print('well_interp_df', well_interp_df)
-    # find the start of the well data
-    beg_well_data = well_interp_df.notna().idxmax().min()
-    print('beg well data ', beg_well_data)
-    origwelldata_df = well_interp_df[well_interp_df.index > beg_well_data]  # start of well data
-    # well_interp_df.to_csv('well_interp.csv')
+
     # combine the  data from the wells and the satellite observations  to a single dataframe (combined_df)
     # this will have a row for every measurement (on the start of the month) a column for each well,
     # and a column for pdsi and soilw and their rolling averages, and potentially offsets
     combined_df = pd.concat([well_interp_df, gldas_df], join="outer", axis=1, sort=False)
-    combined_df.to_csv('combined_1.csv')
-    print(combined_df.index)
-    orig_df = combined_df.copy()
-
-    combined_df = orig_df.dropna(axis=1, thresh=3)
-    dropped_col = orig_df.shape[1] - combined_df.shape[1]
-    all_names = [str(x) for x in list(combined_df.columns)]
-    sat_pat = re.compile('pdsi|soilw')  # pattern to look for satellite data column names
-    names = list(filter(sat_pat.match, all_names))  # list of the column names with sat data
-    names = [int(ele) if ele.isdigit() else ele for ele in names]
-    well_names = [ele for ele in list(combined_df.columns) if ele not in names]
-    print(names)
-    print(well_names)
-    # combined_df = combined_df[combined_df.index > beg_well_data]
     combined_df.dropna(subset=names, inplace=True)  # drop rows where there are no satellite data
-    # # add cumulative sums of the drought indexes to the combined data
-    # combined_df.to_csv('combined_2.csv')
-    # print('drop nulls for combined', combined_df)
-    # combined_df, names = sat_cumsum(combined_df, names)
-    # combined_df['year'] = combined_df.index.year + (combined_df.index.month - 1) / 12  # add linear trend (decimal years)
-    # names.append('year')
-    # combined_df.to_csv('combined_3.csv')
-    # combined_df.dropna(thresh=min_samples, axis=1, inplace=True)
+    combined_df.dropna(how='all', axis=1, inplace=True)
+
     norm_df = norm_training_data(combined_df, combined_df)
-    print('norm_df', norm_df)
-    norm_df.to_csv('norm.csv')
-    # well_names = list(set(combined_df) - set(names))
-    imputed_norm_df = impute_data(norm_df, norm_df, well_names, names)
+    well_names = [col for col in well_interp_df.columns if col in norm_df.columns]
+    imputed_norm_df = impute_data(norm_df, well_names, names)
     ref_df = combined_df[well_names]
     imputed_df = renorm_data(imputed_norm_df, ref_df)
-    # print(imputed_df)
 
-    # plot_imputed_results(wells_df, combined_df, imputed_df, well_names)
     imputed_well_names = imputed_df.columns  # create a list of well names
     loc_well_names = [int(strg.replace('_imputed', '')) for strg in imputed_well_names]  # strip off "_imputed"
     coords_df = wells_query_df[wells_query_df.id.isin(loc_well_names)]
@@ -619,18 +555,16 @@ def mlr_interpolation(mlr_dict):
 
     skip_month = 48  # take data every nth month (skip_months), e.g., 60 = every 5 years
     years_df = imputed_df.iloc[::skip_month].T  # extract every nth month of data and transpose array
-    print(len(years_df))
     aquifer_name = aquifer_obj[1].replace(" ", "_")
-
-    file_name = f'{aquifer_name}_{variable}_{start_year}_{end_year}_{time.time()}.nc'
-
+    file_name = f'{aquifer_name}_{variable}_{time.time()}.nc'
+    # setup a netcdf file to store the time series of rasters
+    #
     nc_file_path = generate_nc_file(file_name, grid_x, grid_y, years_df, coords_df, x_coords, y_coords)
     final_nc_path = clip_nc_file(nc_file_path, aquifer_obj, region_id)
     return final_nc_path
 
 
 def process_interpolation(info_dict):
-    print(info_dict)
     from_wizard = info_dict['from_wizard']
     if from_wizard == 'true':
         pass
@@ -643,7 +577,7 @@ def process_interpolation(info_dict):
     iterations = (end_date - start_date) / (interval + 1)
     start_time = calendar.timegm(datetime.datetime(start_date, 1, 1).timetuple())
     end_time = calendar.timegm(datetime.datetime(end_date, 1, 1).timetuple())
-
+    process_start_time = time.time()
     time_u = "Y"
 
     if interval <= .5:
@@ -674,7 +608,7 @@ def process_interpolation(info_dict):
     gap_size = info_dict['gap_size']
     pad = int(info_dict['pad'])
     spacing = info_dict['spacing']
-
+    success_tracker = []
     if temporal_interpolation == 'MLR':
         for aquifer in aquifer_list:
             mlr_dict = {'region': region_id,
@@ -691,10 +625,18 @@ def process_interpolation(info_dict):
                         'gap_size': gap_size,
                         'pad': pad,
                         'spacing': spacing}
-            mlr_interpolation(mlr_dict)
+            try:
+                mlr_interpolation(mlr_dict)
+                success_tracker.append('success')
+            except Exception as e:
+                success_tracker.append('error')
+                continue
 
-    end_time = time.time()
-    total_time = end_time - start_time
-    return total_time
-
-# process_interpolation(INFO_DICT)
+    process_end_time = time.time()
+    total_time = process_end_time - process_start_time
+    return_obj = {
+        'total_time': total_time,
+        'success': success_tracker.count('success'),
+        'failed': success_tracker.count('error')
+    }
+    return return_obj
