@@ -297,7 +297,7 @@ var LIBRARY_OBJECT = (function() {
                 if(outlier_status){
                     checked = 'checked';
                 }
-                var outlier_toggle = '<input type="checkbox" class="set-outlier" id="outlier-toggle" name="outlier-toggle" '+checked+'><label for="outlier-toggle">Set Outlier</label>';
+                var outlier_toggle = '<input type="checkbox" class="set-outlier" id="outlier-toggle" name="outlier-toggle" '+checked+'><label for="outlier-toggle">Outlier</label>';
                 popupString += outlier_toggle;
             }
             layer.bindPopup(popupString);
@@ -556,7 +556,7 @@ var LIBRARY_OBJECT = (function() {
                 }
             },
             title: {
-                text: result['well_info']["well_name"]+ variable_name + " values",
+                text: result['well_info']["well_name"] +" "+ variable_name + " values",
                 style: {
                     fontSize: '14px'
                 }
@@ -621,7 +621,7 @@ var LIBRARY_OBJECT = (function() {
                         range: {
                             'min': 0,
                             'max': max_obs
-                        }
+                        },
                     });
                     slidervar.removeAttribute('disabled');
                 }else{
