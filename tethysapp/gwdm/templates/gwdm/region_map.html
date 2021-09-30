@@ -45,13 +45,15 @@
 
 <li class="{% if request.path == home_url %}active{% endif %}"><a href="{{home_url}}">Go Home</a></li>
 <h3>Region Name: {{region_name}}</h3>
-
+{% gizmo region_select %}
 {% gizmo aquifer_select %}
 {% gizmo variable_select %}
 {% gizmo select_interpolation %}
+<div id="map-info" user-status="{% if user.is_superuser or user.is_staff %}admin{% else %} regular{% endif%}"
+     region-name="{{region_name}}"></div>
 <div>
-  <input type="checkbox" id="cluster-toggle" name="cluster-toggle" >
-  <label for="cluster-toggle">Cluster Wells</label>
+    <input type="checkbox" id="cluster-toggle" name="cluster-toggle" >
+    <label for="cluster-toggle">Cluster Wells</label>
 </div>
 <label>
     Filter Wells By Observations

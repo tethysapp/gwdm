@@ -223,7 +223,7 @@ var LIBRARY_OBJECT = (function() {
                     // {title:"Edit", formatter:updateIcon, align:"center", cellClick:function(e, cell){update_form(e, cell)}},
                     {title:"Delete", formatter:deleteIcon, align:"center", cellClick:function(e, cell){delete_well(e, cell)}},
                     {title:"Well Name", field:"well_name", sorter:"string", headerFilter:"select", headerFilterParams:{values:true}},
-                    // {title:"Well ID", field:"well_id", sorter:"string", headerFilter:"select", headerFilterParams:{values:true}},
+                    {title:"Well ID", field:"well_id", sorter:"string", headerFilter:"select", headerFilterParams:{values:true}},
                     {title:"GSE", field:"gse", sorter:"string"},
                     {title:"Attributes", field:"attr_dict", align:"center", sorter:"string"},
                 ]

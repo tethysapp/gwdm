@@ -176,10 +176,13 @@ var LIBRARY_OBJECT = (function() {
         var submit_button_html = submit_button.html();
         submit_button.text('Submitting ...');
         var xhr = ajax_update_database_with_file("submit", data); //Submitting the data through the ajax function, see main.js for the helper function.
+        addInfoMessage("Adding wells. Please wait...","message");
+
         xhr.done(function(return_data){ //Reset the form once the data is added successfully
             if("success" in return_data){
                 submit_button.html(submit_button_html);
                 reset_form(return_data);
+                addSuccessMessage(return_data["success"]);
             }else{
                 addErrorMessage(return_data['error']);
             }

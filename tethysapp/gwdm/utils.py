@@ -64,7 +64,7 @@ def get_regions() -> List:
     """
     session = get_session_obj()
     regions = session.query(Region).all()
-    region_list = [(region.region_name, region.id) for region in regions]
+    region_list = sorted([(region.region_name, region.id) for region in regions])
     session.close()
     return region_list
 
@@ -108,6 +108,25 @@ def get_aquifer_select(region_id: Union[int, None], aquifer_id: bool = False) ->
     Returns:
         Aquifer Select Gizmo Object. Used to generate an aquifer select dropdown.
     """
+    aquifer_list = region_aquifers_select_list(region_id, aquifer_id)
+
+    aquifer_select = SelectInput(display_text='Select an Aquifer',
+                                 name='aquifer-select',
+                                 options=aquifer_list,)
+
+    return aquifer_select
+
+
+def region_aquifers_select_list(region_id: Union[int, None], aquifer_id: bool = False) -> List:
+    """
+    Generate list of aquifers for given region
+
+    Args:
+        region_id: RegionId as listed in the Region table
+        aquifer_id: Boolean to decide the aquifer id type
+    Returns:
+        List of aquifers for region. If None returns all aquifers
+    """
     aquifer_list = []
     if region_id is not None:
         session = get_session_obj()
@@ -119,12 +138,7 @@ def get_aquifer_select(region_id: Union[int, None], aquifer_id: bool = False) ->
             else:
                 aquifer_list.append(("%s" % aquifer.aquifer_name, aquifer.aquifer_id))
         session.close()
-
-    aquifer_select = SelectInput(display_text='Select an Aquifer',
-                                 name='aquifer-select',
-                                 options=aquifer_list,)
-
-    return aquifer_select
+    return sorted(aquifer_list)
 
 
 def get_variable_list() -> List:
@@ -194,7 +208,7 @@ def get_region_variables_list(region_id: Union[int, None]) -> List:
             return region_variables_list
     else:
         variable_list = get_variable_list()
-        return variable_list
+        return sorted(variable_list)
 
 
 def get_metrics() -> Any:
@@ -242,7 +256,7 @@ def get_region_aquifers_list(region_id: int) -> List:
     aquifers = session.query(Aquifer).filter(Aquifer.region_id == region_id)
     aquifers_list = [[aquifer.aquifer_name, aquifer.id] for aquifer in aquifers]
     session.close()
-    return aquifers_list
+    return sorted(aquifers_list)
 
 
 def get_aquifers_list() -> List:
@@ -890,8 +904,8 @@ def get_wms_metadata(aquifer_name: str, file_name: str, region_id: str) -> Tuple
     ds = xr.open_dataset(file_path)
     # range_min = int(ds.tsvalue.min().values)
     # range_max = int(ds.tsvalue.max().values)
-    range_min = float(ds.tsvalue.min().values)
-    range_max = float(ds.tsvalue.max().values)
+    range_min = round(float(ds.tsvalue.min().values), 3)
+    range_max = round(float(ds.tsvalue.max().values), 3)
     return range_min, range_max
 
 

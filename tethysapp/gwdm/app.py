@@ -81,6 +81,11 @@ class Gwdm(TethysAppBase):
                 controller='gwdm.controllers.region_map'
             ),
             UrlMap(
+                name='region-map-aquifers',
+                url='gwdm/region-map/get-aquifers',
+                controller='gwdm.controllers_ajax.get_aquifers'
+            ),
+            UrlMap(
                 name='region-map-ts',
                 url='gwdm/region-map/get-timeseries',
                 controller='gwdm.controllers_ajax.region_timeseries'

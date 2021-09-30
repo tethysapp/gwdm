@@ -749,13 +749,49 @@ var LIBRARY_OBJECT = (function() {
     // the DOM tree finishes loading
     $(function() {
         init_all();
-        view_region(region, get_region_aquifers);
+        // view_region(region, get_region_aquifers);
         Highcharts.setOptions({
             lang: {
                 decimalPoint: '.',
                 thousandsSep: ','
             }
         });
+        $("#region-select").change(function(){
+            region = $("#region-select").val();
+            view_region(region, get_region_aquifers);
+            original_map_chart();
+            var xhr = ajax_update_database("get-aquifers", {'id': region}); //Submitting the data through the ajax function, see main.js for the helper function.
+            xhr.done(function(return_data){ //Reset the form once the data is added successfully
+                if("success" in return_data){
+                    var options = return_data["aquifers_list"];
+                    var var_options = return_data["variables_list"];
+                    $("#aquifer-select").html('');
+                    $("#variable-select").html('');
+                    $("#select-interpolation").html('');
+                    $("#aquifer-select").val(null).trigger('change.select2');
+                    $("#variable-select").val(null).trigger('change.select2');
+                    $("#variable-select").select2({'multiple': false,  placeholder: "Select a Variable"});
+                    $("#aquifer-select").select2({'multiple': false,  placeholder: "Select an Aquifer"});
+                    var empty_opt = '<option value="" selected disabled>Select item...</option>';
+                    var var_empty_opt = '<option value="" selected disabled>Select item...</option>';
+
+                    $("#aquifer-select").append(empty_opt);
+                    $("#variable-select").append(var_empty_opt);
+                    options.forEach(function(attr,i){
+                        var aquifer_option = new Option(attr[0], attr[1]);
+                        $("#aquifer-select").append(aquifer_option);
+                    });
+                    var_options.forEach(function(attr, i){
+                        var var_option = new Option(attr[0], attr[1]);
+                        $("#variable-select").append(var_option);
+                    });
+
+                }else{
+                    addErrorMessage(return_data['error']);
+                }
+            });
+        });
+        $("#region-select").val(region).trigger("change");
 
         var aquifer_empty_opt = '<option value="" selected disabled>Select Aquifer...</option>';
         $("#aquifer-select").prepend(aquifer_empty_opt);
@@ -765,9 +801,11 @@ var LIBRARY_OBJECT = (function() {
             var variable_id = $("#variable-select option:selected").val();
             var aquifer_name = $("#aquifer-select option:selected").text();
             view_aquifer(aquifer_id);
-            get_well_obs(aquifer_id, variable_id);
+            if(variable_id !== ""){
+                get_well_obs(aquifer_id, variable_id);
+                get_wms_datasets(aquifer_name, variable_id, region);
+            }
             original_map_chart();
-            get_wms_datasets(aquifer_name, variable_id, region);
             $("#legend-image").attr("src", '');
             interpolationGroup.clearLayers();
             contourGroup.clearLayers();
@@ -781,9 +819,11 @@ var LIBRARY_OBJECT = (function() {
             var aquifer_id = $("#aquifer-select option:selected").val();
             var aquifer_name = $("#aquifer-select option:selected").text();
             var variable_id = $("#variable-select option:selected").val();
-            get_well_obs(aquifer_id, variable_id);
+            if(variable_id !== ""){
+                get_well_obs(aquifer_id, variable_id);
+                get_wms_datasets(aquifer_name, variable_id, region);
+            }
             original_map_chart();
-            get_wms_datasets(aquifer_name, variable_id, region);
             $("#legend-image").attr("src", '');
             $('.lcontrol').addClass('hidden');
             $('.leaflet-bar-timecontrol').addClass('hidden');
@@ -813,6 +853,7 @@ var LIBRARY_OBJECT = (function() {
             var src = wmsUrl + "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&LAYER=tsvalue"+
                 "&colorscalerange="+range_min+","+range_max+"&PALETTE="+symbology+"&transparent=TRUE";
             $("#legend-image").attr("src", src);
+            console.log(src);
         });
 
         $("#opacity_val").change(function(){

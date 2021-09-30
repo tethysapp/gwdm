@@ -338,7 +338,7 @@ def get_measurements_attributes(request, app_workspace):
             return JsonResponse(json_obj)
 
 
-@user_passes_test(user_permission_test)
+# @user_passes_test(user_permission_test)
 def get_aquifers(request):
     """
     Ajax controller to get list of aquifers in a region
@@ -357,7 +357,7 @@ def get_aquifers(request):
         return JsonResponse(response)
 
 
-@user_passes_test(user_permission_test)
+# @user_passes_test(user_permission_test)
 def get_wells(request):
     """
     Ajax controller to get wells in a given aquifer
@@ -428,6 +428,7 @@ def wells_tabulator(request):
     for well in wells:
         json_dict = {"id": well.id,
                      "well_name": well.well_name,
+                     "well_id": well.well_id,
                      "gse": well.gse,
                      "attr_dict": json.dumps(well.attr_dict)
                      }

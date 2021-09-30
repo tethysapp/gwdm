@@ -101,8 +101,9 @@ def region_map(request):
     info = request.GET
 
     region_id = info.get('region-select')
+    region_select = get_region_select()
     region_name = get_region_name(int(region_id))
-    aquifer_select = get_aquifer_select(region_id, aquifer_id=True)
+    aquifer_select = get_aquifer_select(int(region_id), aquifer_id=True)
     geoserver_text_input = geoserver_text_gizmo()
     thredds_text_input = thredds_text_gizmo()
     variable_select = get_region_variable_select(region_id=region_id)
@@ -119,6 +120,7 @@ def region_map(request):
                                   classes="hidden")
 
     context = {
+        'region_select': region_select,
         'aquifer_select': aquifer_select,
         'variable_select': variable_select,
         'geoserver_text_input': geoserver_text_input,
