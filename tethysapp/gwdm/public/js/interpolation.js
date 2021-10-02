@@ -62,28 +62,29 @@ var LIBRARY_OBJECT = (function() {
 
     submit_interpolation = function(){
         reset_alert();
-        var region = $("#region-select option:selected").val();
-        var aquifer = $("#aquifer-select option:selected").val();
-        var variable = $("#variable-select option:selected").val();
-        var porosity = $("#select-porosity").val();
-        var spatial_interpolation = $("#select-spatial-interpolation option:selected").val();
-        var temporal_interpolation = $("#select-temporal-interpolation option:selected").val();
+        let region = $("#region-select option:selected").val();
+        let aquifer = $("#aquifer-select option:selected").val();
+        let variable = $("#variable-select option:selected").val();
+        let file_name = $("#output-file-input").val();
+        let porosity = $("#select-porosity").val();
+        let spatial_interpolation = $("#select-spatial-interpolation option:selected").val();
+        let temporal_interpolation = $("#select-temporal-interpolation option:selected").val();
         // var interpolation_options = $("#interpolation_options option:selected").val();
-        var search_radius = $("#select-search-radius option:selected").val();
-        var ndmin = $("#select-ndmin option:selected").val();
-        var ndmax = $("#select-ndmax option:selected").val();
-        var start_date = $("#start-date option:selected").val();
-        var end_date = $("#end-date option:selected").val();
-        var resolution = $("#resolution option:selected").val();
-        var min_ratio = $("#min-ratio option:selected").val();
-        var time_tolerance = $("#time-tolerance option:selected").val();
-        var frequency = $("#frequency option:selected").val();
-        var default_val = $("#default option:selected").val();
-        var min_samples = $("#min-samples option:selected").val();
-        var seasonal = $("#seasonal option:selected").val();
-        var gap = $("#gap-size-input").val();
-        var spacing = $("#spacing-input").val();
-        var pad = $("#pad-input").val();
+        let search_radius = $("#select-search-radius option:selected").val();
+        let ndmin = $("#select-ndmin option:selected").val();
+        let ndmax = $("#select-ndmax option:selected").val();
+        let start_date = $("#start-date option:selected").val();
+        let end_date = $("#end-date option:selected").val();
+        let resolution = $("#resolution option:selected").val();
+        let min_ratio = $("#min-ratio option:selected").val();
+        let time_tolerance = $("#time-tolerance option:selected").val();
+        let frequency = $("#frequency option:selected").val();
+        let default_val = $("#default option:selected").val();
+        let min_samples = $("#min-samples option:selected").val();
+        let seasonal = $("#seasonal option:selected").val();
+        let gap = $("#gap-size-input").val();
+        let spacing = $("#spacing-input").val();
+        let pad = $("#pad-input").val();
 
         // form_validator(region, "Region cannot be empty!");
         // if(region === ""){
@@ -112,36 +113,25 @@ var LIBRARY_OBJECT = (function() {
         // form_validator(interpolation_options, "Interpolation options cannot be empty!");
 
         addInfoMessage("Interpolation in Progress. Please wait...","message");
-        var data = new FormData();
+        let data = new FormData();
         data.append("region", region);
         data.append("aquifer", aquifer);
         data.append("variable", variable);
-        data.append("porosity", porosity);
-        data.append("spatial_interpolation", spatial_interpolation);
+        data.append("file_name", file_name)
         data.append("temporal_interpolation", temporal_interpolation);
-        // data.append("interpolation_options", interpolation_options);
-        data.append("search_radius", search_radius);
-        data.append("ndmin", ndmin);
-        data.append("ndmax", ndmax);
-        data.append("start_date", start_date);
-        data.append("end_date", end_date);
-        data.append("resolution", resolution);
         data.append("min_ratio", min_ratio);
         data.append("time_tolerance", time_tolerance);
         data.append("frequency", frequency);
-        data.append("default", default_val);
         data.append("min_samples", min_samples);
-        data.append("seasonal", seasonal);
-        data.append("from_wizard", true);
         data.append("gap_size", gap);
         data.append("spacing", spacing);
         data.append("pad", pad);
 
 
-        var submit_button = $("#submit");
-        var submit_button_html = submit_button.html();
+        let submit_button = $("#submit");
+        let submit_button_html = submit_button.html();
         submit_button.text('Submitting ...');
-        var xhr = ajax_update_database_with_file("submit",data); //Submitting the data through the ajax function, see main.js for the helper function.
+        let xhr = ajax_update_database_with_file("submit",data); //Submitting the data through the ajax function, see main.js for the helper function.
         xhr.done(function(return_data){ //Reset the form once the data is added successfully
             if("success" in return_data){
                 submit_button.html(submit_button_html);

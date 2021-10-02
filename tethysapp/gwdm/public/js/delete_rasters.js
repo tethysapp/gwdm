@@ -105,7 +105,7 @@ var LIBRARY_OBJECT = (function() {
                     var all_opt = new Option('All Rasters', 'all');
                     $("#select-interpolation").append(all_opt);
                     wms_options.forEach(function(attr,i){
-                        var wms_option = new Option(attr[1], attr[1]);
+                        var wms_option = new Option(attr[0], attr[0]);
                         $("#select-interpolation").append(wms_option);
                     });
                 }

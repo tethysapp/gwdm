@@ -18,16 +18,11 @@ import xarray as xr
 from pandarallel import pandarallel
 from shapely import wkt
 from sqlalchemy.sql import func
-from tethys_sdk.gizmos import (TextInput,
-                               SelectInput)
+from tethys_sdk.gizmos import TextInput, SelectInput
 from siphon.catalog import TDSCatalog
 
 from .app import Gwdm as app
-from .model import (Region,
-                    Aquifer,
-                    Well,
-                    Measurement,
-                    Variable)
+from .model import Region, Aquifer, Well, Measurement, Variable
 
 
 def user_permission_test(user):
@@ -50,7 +45,7 @@ def get_session_obj():
     Returns:
         SQL Alchemy Session Object
     """
-    app_session = app.get_persistent_store_database('gwdb', as_sessionmaker=True)
+    app_session = app.get_persistent_store_database("gwdb", as_sessionmaker=True)
     session = app_session()
     return session
 
@@ -77,7 +72,9 @@ def get_region_name(region_id: int) -> str:
         Region name string
     """
     session = get_session_obj()
-    region_name = session.query(Region.region_name).filter(Region.id == region_id).first()[0]
+    region_name = (
+        session.query(Region.region_name).filter(Region.id == region_id).first()[0]
+    )
     session.close()
     return region_name
 
@@ -90,9 +87,11 @@ def get_region_select():
         Tethys Select Input Gizmo Object to select regions
     """
     region_list = get_regions()
-    region_select = SelectInput(display_text='Select a Region',
-                                name='region-select',
-                                options=region_list,)
+    region_select = SelectInput(
+        display_text="Select a Region",
+        name="region-select",
+        options=region_list,
+    )
 
     return region_select
 
@@ -110,14 +109,18 @@ def get_aquifer_select(region_id: Union[int, None], aquifer_id: bool = False) ->
     """
     aquifer_list = region_aquifers_select_list(region_id, aquifer_id)
 
-    aquifer_select = SelectInput(display_text='Select an Aquifer',
-                                 name='aquifer-select',
-                                 options=aquifer_list,)
+    aquifer_select = SelectInput(
+        display_text="Select an Aquifer",
+        name="aquifer-select",
+        options=aquifer_list,
+    )
 
     return aquifer_select
 
 
-def region_aquifers_select_list(region_id: Union[int, None], aquifer_id: bool = False) -> List:
+def region_aquifers_select_list(
+    region_id: Union[int, None], aquifer_id: bool = False
+) -> List:
     """
     Generate list of aquifers for given region
 
@@ -150,7 +153,9 @@ def get_variable_list() -> List:
     """
     session = get_session_obj()
     variables = session.query(Variable).all()
-    variable_list = [(f'{variable.name}, {variable.units}', variable.id) for variable in variables]
+    variable_list = [
+        (f"{variable.name}, {variable.units}", variable.id) for variable in variables
+    ]
     session.close()
     return variable_list
 
@@ -164,9 +169,11 @@ def get_variable_select() -> Any:
     """
     variable_list = get_variable_list()
 
-    variable_select = SelectInput(display_text='Select Variable',
-                                  name='variable-select',
-                                  options=variable_list,)
+    variable_select = SelectInput(
+        display_text="Select Variable",
+        name="variable-select",
+        options=variable_list,
+    )
     return variable_select
 
 
@@ -183,22 +190,37 @@ def get_region_variables_list(region_id: Union[int, None]) -> List:
 
     if region_id is not None:
         session = get_session_obj()
-        variables = (session.query(Variable)
-                     .join(Measurement, Measurement.variable_id == Variable.id)
-                     .join(Well, Measurement.well_id == Well.id)
-                     .join(Aquifer, Well.aquifer_id == Aquifer.id)
-                     .filter(Aquifer.region_id == region_id)
-                     .distinct()
-                     )
-        region_variables_list = [(f'{variable.name}, {variable.units}', variable.id) for variable in variables]
-        thredds_directory = app.get_custom_setting('gw_thredds_directoy')
-        thredds_vars = list({int(re.findall('_\d_', _file)[0][1])
-                             for _file in glob.glob(os.path.join(thredds_directory, f'{region_id}', '*', '*.nc'))})
+        variables = (
+            session.query(Variable)
+            .join(Measurement, Measurement.variable_id == Variable.id)
+            .join(Well, Measurement.well_id == Well.id)
+            .join(Aquifer, Well.aquifer_id == Aquifer.id)
+            .filter(Aquifer.region_id == region_id)
+            .distinct()
+        )
+        region_variables_list = [
+            (f"{variable.name}, {variable.units}", variable.id)
+            for variable in variables
+        ]
+        thredds_directory = app.get_custom_setting("gw_thredds_directoy")
+        thredds_vars = list(
+            {
+                int(re.findall("_\d_", _file)[0][1])
+                for _file in glob.glob(
+                    os.path.join(thredds_directory, f"{region_id}", "*", "*.nc")
+                )
+            }
+        )
         all_variables_list = get_variable_list()
         variables_dict = dict(all_variables_list)
         for _var in thredds_vars:
             if _var not in dict(region_variables_list).values():
-                var_tuple = (list(variables_dict.keys())[list(variables_dict.values()).index(_var)], _var)
+                var_tuple = (
+                    list(variables_dict.keys())[
+                        list(variables_dict.values()).index(_var)
+                    ],
+                    _var,
+                )
                 region_variables_list.append(var_tuple)
 
         if len(region_variables_list) == 0:
@@ -219,25 +241,41 @@ def get_metrics() -> Any:
         Plotly Figure Object of a Pandas DataFrame grouped by Region, Variable, and Measurements
     """
     session = get_session_obj()
-    metrics_query = (session.query(Region.region_name, Variable.name.label('variable_name'),
-                                   func.count(Measurement.id).label('measurements'))
-                     .join(Measurement, Measurement.variable_id == Variable.id)
-                     .join(Well, Measurement.well_id == Well.id)
-                     .join(Aquifer, Well.aquifer_id == Aquifer.id)
-                     .join(Region, Region.id == Aquifer.region_id)
-                     .group_by(Region.region_name, Variable.name)
-                     )
+    metrics_query = (
+        session.query(
+            Region.region_name,
+            Variable.name.label("variable_name"),
+            func.count(Measurement.id).label("measurements"),
+        )
+        .join(Measurement, Measurement.variable_id == Variable.id)
+        .join(Well, Measurement.well_id == Well.id)
+        .join(Aquifer, Well.aquifer_id == Aquifer.id)
+        .join(Region, Region.id == Aquifer.region_id)
+        .group_by(Region.region_name, Variable.name)
+    )
     metrics_df = pd.read_sql(metrics_query.statement, session.bind)
     session.close()
 
-    fig = go.Figure(data=[go.Table(
-        header=dict(values=['Region Name', 'Variable Name', 'Number of Measurements'],
-                    fill_color='paleturquoise',
-                    align='left'),
-        cells=dict(values=[metrics_df.region_name, metrics_df.variable_name, metrics_df.measurements],
-                   fill_color='lavender',
-                   align='left'))
-    ])
+    fig = go.Figure(
+        data=[
+            go.Table(
+                header=dict(
+                    values=["Region Name", "Variable Name", "Number of Measurements"],
+                    fill_color="paleturquoise",
+                    align="left",
+                ),
+                cells=dict(
+                    values=[
+                        metrics_df.region_name,
+                        metrics_df.variable_name,
+                        metrics_df.measurements,
+                    ],
+                    fill_color="lavender",
+                    align="left",
+                ),
+            )
+        ]
+    )
 
     return fig
 
@@ -306,7 +344,7 @@ def get_num_rasters() -> int:
     Returns:
         The total number of rasters in the app
     """
-    thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+    thredds_directory = app.get_custom_setting("gw_thredds_directoy")
     num_rasters = sum([len(files) for r, d, files in os.walk(thredds_directory)])
     return int(num_rasters)
 
@@ -322,18 +360,20 @@ def get_region_variable_select(region_id: Union[int, None]) -> Any:
         A Variable Select Input Tethys Gizmo Object
     """
     variable_list = get_region_variables_list(region_id)
-    variable_select = SelectInput(display_text='Select Variable',
-                                  name='variable-select',
-                                  options=variable_list,
-                                  attributes={'id': 'variable-select'},
-                                  classes='variable-select')
+    variable_select = SelectInput(
+        display_text="Select Variable",
+        name="variable-select",
+        options=variable_list,
+        attributes={"id": "variable-select"},
+        classes="variable-select",
+    )
 
     return variable_select
 
 
-def process_region_shapefile(shapefile: Any,
-                             region_name: str,
-                             app_workspace: Any) -> Dict:
+def process_region_shapefile(
+    shapefile: Any, region_name: str, app_workspace: Any
+) -> Dict:
     """
     Process Uploaded Region Shapefile
 
@@ -350,8 +390,8 @@ def process_region_shapefile(shapefile: Any,
     temp_dir = None
     try:
         gdf, temp_dir = get_shapefile_gdf(shapefile, app_workspace)
-        gdf['region_name'] = region_name
-        gdf = gdf.dissolve(by='region_name')
+        gdf["region_name"] = region_name
+        gdf = gdf.dissolve(by="region_name")
         region = Region(region_name=region_name, geometry=gdf.geometry.values[0])
         session.add(region)
         session.commit()
@@ -372,11 +412,9 @@ def process_region_shapefile(shapefile: Any,
                 shutil.rmtree(temp_dir)
 
 
-def process_aquifer_shapefile(shapefile: Any,
-                              region_id: int,
-                              name_attr: str,
-                              id_attr: str,
-                              app_workspace: Any) -> Dict:
+def process_aquifer_shapefile(
+    shapefile: Any, region_id: int, name_attr: str, id_attr: str, app_workspace: Any
+) -> Dict:
     """
     Process uploaded auifer shapefile
 
@@ -394,28 +432,30 @@ def process_aquifer_shapefile(shapefile: Any,
     temp_dir = None
 
     def add_aquifer_apply(row):
-        aquifer = Aquifer(region_id=region_id,
-                          aquifer_name=row.aquifer_name,
-                          aquifer_id=row.aquifer_id,
-                          geometry=row.geometry)
+        aquifer = Aquifer(
+            region_id=region_id,
+            aquifer_name=row.aquifer_name,
+            aquifer_id=row.aquifer_id,
+            geometry=row.geometry,
+        )
         return aquifer
+
     try:
         start_time = time.time()
         pandarallel.initialize()
         gdf, temp_dir = get_shapefile_gdf(shapefile, app_workspace)
         gdf = gdf.dissolve(by=name_attr, as_index=False)
         # gdf.to_csv('texas_aquifers.csv')
-        rename_cols = {name_attr: 'aquifer_name',
-                       id_attr: 'aquifer_id'}
+        rename_cols = {name_attr: "aquifer_name", id_attr: "aquifer_id"}
         gdf.rename(columns=rename_cols, inplace=True)
-        gdf = gdf[['aquifer_name', 'aquifer_id', 'geometry']]
+        gdf = gdf[["aquifer_name", "aquifer_id", "geometry"]]
         aquifer_list = gdf.parallel_apply(add_aquifer_apply, axis=1)
 
         session.add_all(aquifer_list)
         session.commit()
         session.close()
         end_time = time.time()
-        total_time = (end_time - start_time)
+        total_time = end_time - start_time
 
         return {"success": "success", "total_time": total_time}
 
@@ -432,9 +472,9 @@ def process_aquifer_shapefile(shapefile: Any,
                 shutil.rmtree(temp_dir)
 
 
-def get_shapefile_gdf(shapefile: Any,
-                      app_workspace: Any,
-                      polygons: bool = True) -> Tuple[Any, Any]:
+def get_shapefile_gdf(
+    shapefile: Any, app_workspace: Any, polygons: bool = True
+) -> Tuple[Any, Any]:
     """
     Helper function to process uploaded shapefile
 
@@ -457,7 +497,7 @@ def get_shapefile_gdf(shapefile: Any,
         f_name = f.name
         f_path = os.path.join(temp_dir, f_name)
 
-        with open(f_path, 'wb') as f_local:
+        with open(f_path, "wb") as f_local:
             f_local.write(f.read())
 
     for file in os.listdir(temp_dir):
@@ -474,18 +514,20 @@ def get_shapefile_gdf(shapefile: Any,
         gdf = gpd.read_file(gbyos_pol_shp)
 
     if upload_csv is not None:
-        df = pd.read_csv(upload_csv, engine='python')
+        df = pd.read_csv(upload_csv, engine="python")
         if polygons:
-            gdf = gpd.GeoDataFrame(df, crs={'init': 'epsg:4326'}, geometry=df['geometry'].apply(wkt.loads))
+            gdf = gpd.GeoDataFrame(
+                df, crs={"init": "epsg:4326"}, geometry=df["geometry"].apply(wkt.loads)
+            )
         else:
             gdf = df
 
     return gdf, temp_dir
 
 
-def get_shapefile_attributes(shapefile: Any,
-                             app_workspace: Any,
-                             polygons: bool = True) -> Any:
+def get_shapefile_attributes(
+    shapefile: Any, app_workspace: Any, polygons: bool = True
+) -> Any:
     """
     Get attributes from the uploaded shapefile
 
@@ -525,13 +567,17 @@ def geoserver_text_gizmo() -> Any:
     Returns:
         A Hidden Tethys Gizmo Input with Geoserver WFS Endpoint
     """
-    geoserver_wfs_endpoint = app.get_spatial_dataset_service('primary_geoserver', as_wfs=True)
+    geoserver_wfs_endpoint = app.get_spatial_dataset_service(
+        "primary_geoserver", as_wfs=True
+    )
 
-    geoserver_text_input = TextInput(display_text='Geoserver',
-                                     name='geoserver-text-input',
-                                     placeholder=geoserver_wfs_endpoint,
-                                     attributes={'value': geoserver_wfs_endpoint},
-                                     classes="hidden")
+    geoserver_text_input = TextInput(
+        display_text="Geoserver",
+        name="geoserver-text-input",
+        placeholder=geoserver_wfs_endpoint,
+        attributes={"value": geoserver_wfs_endpoint},
+        classes="hidden",
+    )
 
     return geoserver_text_input
 
@@ -543,27 +589,33 @@ def thredds_text_gizmo() -> Any:
     Returns:
         A Hidden Tethys Gizmo Input with Thredds WMS Endpoint
     """
-    thredds_endpoint = app.get_spatial_dataset_service('primary_thredds', as_endpoint=True)
-    thredds_text_input = TextInput(display_text='Thredds',
-                                   name='thredds-text-input',
-                                   placeholder=thredds_endpoint,
-                                   attributes={'value': thredds_endpoint},
-                                   classes="hidden")
+    thredds_endpoint = app.get_spatial_dataset_service(
+        "primary_thredds", as_endpoint=True
+    )
+    thredds_text_input = TextInput(
+        display_text="Thredds",
+        name="thredds-text-input",
+        placeholder=thredds_endpoint,
+        attributes={"value": thredds_endpoint},
+        classes="hidden",
+    )
 
     return thredds_text_input
 
 
-def process_wells_file(lat: str,
-                       lon: str,
-                       well_id: str,
-                       name: str,
-                       gse: str,
-                       attrs: str,
-                       file: Any,
-                       aquifer_id: str,
-                       aquifer_col: str,
-                       app_workspace: Any,
-                       region_id: int) -> Dict:
+def process_wells_file(
+    lat: str,
+    lon: str,
+    well_id: str,
+    name: str,
+    gse: str,
+    attrs: str,
+    file: Any,
+    aquifer_id: str,
+    aquifer_col: str,
+    app_workspace: Any,
+    region_id: int,
+) -> Dict:
     """
     Add the uploaded Wells File to the Database
 
@@ -590,37 +642,49 @@ def process_wells_file(lat: str,
 
         if gdf.isnull().sum().sum() == 0:
 
-            rename_cols = {lat: 'latitude',
-                           lon: 'longitude',
-                           well_id: 'well_id',
-                           name: 'well_name',
-                           gse: 'gse'}
+            rename_cols = {
+                lat: "latitude",
+                lon: "longitude",
+                well_id: "well_id",
+                name: "well_name",
+                gse: "gse",
+            }
             if len(aquifer_id) > 0:
-                gdf['aquifer_id'] = aquifer_id
+                gdf["aquifer_id"] = aquifer_id
                 gdf = gdf.rename(columns=rename_cols)
 
             if len(aquifer_col) > 0:
-                rename_cols[aquifer_col] = 'aquifer_id'
+                rename_cols[aquifer_col] = "aquifer_id"
                 gdf.rename(columns=rename_cols, inplace=True)
-                if gdf['aquifer_id'].dtypes == np.float64:
-                    gdf['aquifer_id'] = gdf['aquifer_id'].astype(int)
+                if gdf["aquifer_id"].dtypes == np.float64:
+                    gdf["aquifer_id"] = gdf["aquifer_id"].astype(int)
 
-                gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
-                aquifer_ids = list(gdf['aquifer_id'].unique().astype(str))
-                aquifer = (session.query(Aquifer).filter(Aquifer.region_id == region_id,
-                                                         Aquifer.aquifer_id.in_(aquifer_ids)).all())
+                gdf["aquifer_id"] = gdf["aquifer_id"].astype(str)
+                aquifer_ids = list(gdf["aquifer_id"].unique().astype(str))
+                aquifer = (
+                    session.query(Aquifer)
+                    .filter(
+                        Aquifer.region_id == region_id,
+                        Aquifer.aquifer_id.in_(aquifer_ids),
+                    )
+                    .all()
+                )
                 aq_dict = {aq.aquifer_id: aq.id for aq in aquifer}
-                gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
-                gdf['aquifer_id'] = gdf['aquifer_id'].map(aq_dict)
+                gdf["aquifer_id"] = gdf["aquifer_id"].astype(str)
+                gdf["aquifer_id"] = gdf["aquifer_id"].map(aq_dict)
 
             attributes = None
             if attrs:
-                attributes = attrs.split(',')
+                attributes = attrs.split(",")
 
-            well_aquifers_list = [int(aqf_id) for aqf_id in gdf['aquifer_id'].unique()]
-            wells_query = (session.query(Well.well_id).filter(Well.aquifer_id.in_(well_aquifers_list)).all())
+            well_aquifers_list = [int(aqf_id) for aqf_id in gdf["aquifer_id"].unique()]
+            wells_query = (
+                session.query(Well.well_id)
+                .filter(Well.aquifer_id.in_(well_aquifers_list))
+                .all()
+            )
             existing_wells = [value for value, in wells_query]
-            gdf = gdf.loc[~gdf['well_id'].isin(existing_wells)]
+            gdf = gdf.loc[~gdf["well_id"].isin(existing_wells)]
             for row in gdf.itertuples():
                 attr_dict = {}
                 if attributes:
@@ -628,21 +692,25 @@ def process_wells_file(lat: str,
 
                 attr_dict = simplejson.dumps(attr_dict, ignore_nan=True)
                 attr_dict = json.loads(attr_dict)
-                well = Well(aquifer_id=int(row.aquifer_id),
-                            latitude=float(row.latitude),
-                            longitude=float(row.longitude),
-                            well_id=str(row.well_id),
-                            well_name=str(row.well_name),
-                            gse=float(row.gse),
-                            attr_dict=attr_dict,
-                            outlier=False)
+                well = Well(
+                    aquifer_id=int(row.aquifer_id),
+                    latitude=float(row.latitude),
+                    longitude=float(row.longitude),
+                    well_id=str(row.well_id),
+                    well_name=str(row.well_name),
+                    gse=float(row.gse),
+                    attr_dict=attr_dict,
+                    outlier=False,
+                )
                 session.add(well)
             session.commit()
             session.close()
 
-            response = {'success': 'success'}
+            response = {"success": "success"}
         else:
-            response = {'error': 'There were null values in the data. Please fix the data and upload again.'}
+            response = {
+                "error": "There were null values in the data. Please fix the data and upload again."
+            }
     except Exception as e:
         session.close()
         if temp_dir is not None:
@@ -658,16 +726,18 @@ def process_wells_file(lat: str,
     return response
 
 
-def process_measurements_file(region_id: int,
-                              well_id: str,
-                              m_time: str,
-                              value: str,
-                              time_format: str,
-                              variable_id: int,
-                              file: Any,
-                              aquifer_id: str,
-                              aquifer_col: str,
-                              app_workspace: Any) -> Dict:
+def process_measurements_file(
+    region_id: int,
+    well_id: str,
+    m_time: str,
+    value: str,
+    time_format: str,
+    variable_id: int,
+    file: Any,
+    aquifer_id: str,
+    aquifer_col: str,
+    app_workspace: Any,
+) -> Dict:
     """
     Add uploaded measurements to the database
 
@@ -691,44 +761,49 @@ def process_measurements_file(region_id: int,
     session = get_session_obj()
     try:
         gdf, temp_dir = get_shapefile_gdf(file, app_workspace, polygons=False)
-        rename_cols = {well_id: 'well_id',
-                       m_time: 'time',
-                       value: 'value'}
+        rename_cols = {well_id: "well_id", m_time: "time", value: "value"}
         gdf = gdf.rename(columns=rename_cols)
-        pd.to_datetime(gdf['time'], format=time_format)
+        pd.to_datetime(gdf["time"], format=time_format)
         if gdf.isnull().sum().sum() == 0:
 
-            rename_cols = {well_id: 'well_id',
-                           m_time: 'time',
-                           value: 'value'}
+            rename_cols = {well_id: "well_id", m_time: "time", value: "value"}
             gdf = gdf.rename(columns=rename_cols)
-            gdf['variable_id'] = variable_id
+            gdf["variable_id"] = variable_id
 
             if len(aquifer_id) > 0:
-                gdf['aquifer_id'] = aquifer_id
+                gdf["aquifer_id"] = aquifer_id
                 gdf = gdf.rename(columns=rename_cols)
 
             if len(aquifer_col) > 0:
-                rename_cols[aquifer_col] = 'aquifer_id'
+                rename_cols[aquifer_col] = "aquifer_id"
                 gdf.rename(columns=rename_cols, inplace=True)
-                aquifer_ids = list(gdf['aquifer_id'].unique().astype(str))
-                aquifers = (session.query(Aquifer).filter(Aquifer.region_id == region_id,
-                                                          Aquifer.aquifer_id.in_(aquifer_ids)).all())
+                aquifer_ids = list(gdf["aquifer_id"].unique().astype(str))
+                aquifers = (
+                    session.query(Aquifer)
+                    .filter(
+                        Aquifer.region_id == region_id,
+                        Aquifer.aquifer_id.in_(aquifer_ids),
+                    )
+                    .all()
+                )
                 aq_dict = {aq.aquifer_id: aq.id for aq in aquifers}
-                gdf['aquifer_id'] = gdf['aquifer_id'].astype(str)
-                gdf['aquifer_id'] = gdf['aquifer_id'].map(aq_dict)
+                gdf["aquifer_id"] = gdf["aquifer_id"].astype(str)
+                gdf["aquifer_id"] = gdf["aquifer_id"].map(aq_dict)
 
-            aquifer_ids = list(gdf['aquifer_id'].unique().astype(str))
-            well_ids = list(gdf['well_id'].unique().astype(str))
-            wells = (session.query(Well).filter(Well.well_id.in_(well_ids),
-                                                Well.aquifer_id.in_(aquifer_ids)).all())
+            aquifer_ids = list(gdf["aquifer_id"].unique().astype(str))
+            well_ids = list(gdf["well_id"].unique().astype(str))
+            wells = (
+                session.query(Well)
+                .filter(Well.well_id.in_(well_ids), Well.aquifer_id.in_(aquifer_ids))
+                .all()
+            )
             well_dict = {well.well_id: well.id for well in wells}
-            gdf['well_id'] = gdf['well_id'].astype(str)
-            gdf['well_id'] = gdf['well_id'].map(well_dict)
+            gdf["well_id"] = gdf["well_id"].astype(str)
+            gdf["well_id"] = gdf["well_id"].map(well_dict)
             before_filtering = len(gdf)
             unique_wells_before = gdf.well_id.nunique()
             print(unique_wells_before)
-            gdf.dropna(subset=['time', 'value', 'well_id'], inplace=True)
+            gdf.dropna(subset=["time", "value", "well_id"], inplace=True)
             after_filtering = len(gdf)
             unique_wells_after = gdf.well_id.nunique()
             print(unique_wells_after)
@@ -736,19 +811,24 @@ def process_measurements_file(region_id: int,
             print(wells_dropped)
             observations_dropped = before_filtering - after_filtering
             for row in gdf.itertuples():
-                measurement = Measurement(well_id=int(row.well_id),
-                                          variable_id=int(row.variable_id),
-                                          ts_time=row.time,
-                                          ts_value=float(row.value),
-                                          ts_format=time_format
-                                          )
+                measurement = Measurement(
+                    well_id=int(row.well_id),
+                    variable_id=int(row.variable_id),
+                    ts_time=row.time,
+                    ts_value=float(row.value),
+                    ts_format=time_format,
+                )
                 session.add(measurement)
             session.commit()
             session.close()
-            response = {'success': f'Success. Number of observations dropped: {observations_dropped}. '
-                                   f'Number of wells dropped: {wells_dropped}'}
+            response = {
+                "success": f"Success. Number of observations dropped: {observations_dropped}. "
+                f"Number of wells dropped: {wells_dropped}"
+            }
         else:
-            response = {'error': 'There were null values in the data. Please fix the data and upload again.'}
+            response = {
+                "error": "There were null values in the data. Please fix the data and upload again."
+            }
     except Exception as e:
         session.close()
         if temp_dir is not None:
@@ -777,11 +857,24 @@ def get_timeseries(well_id: str, variable_id: int) -> List:
         list of lists with utc time in milliseconds and measurement value
     """
     session = get_session_obj()
-    well_id = well_id.split('.')[1]
-    ts_obj = session.query(Measurement).filter(Measurement.well_id == well_id,
-                                               Measurement.variable_id == variable_id).all()
-    timeseries = sorted([[calendar.timegm(datetime.strptime(obj.ts_time, obj.ts_format).utctimetuple())*1000,
-                          obj.ts_value] for obj in ts_obj])
+    well_id = well_id.split(".")[1]
+    ts_obj = (
+        session.query(Measurement)
+        .filter(Measurement.well_id == well_id, Measurement.variable_id == variable_id)
+        .all()
+    )
+    timeseries = sorted(
+        [
+            [
+                calendar.timegm(
+                    datetime.strptime(obj.ts_time, obj.ts_format).utctimetuple()
+                )
+                * 1000,
+                obj.ts_value,
+            ]
+            for obj in ts_obj
+        ]
+    )
     session.close()
     return timeseries
 
@@ -799,12 +892,19 @@ def get_well_obs(aquifer_id: int, variable_id: int) -> Dict:
         Will be used for the slider in the region map.
     """
     session = get_session_obj()
-    wells_list = [r.id for r in session.query(Well.id).filter(Well.aquifer_id == aquifer_id).distinct()]
-    m_query = (session.query(Measurement.well_id,
-                             func.count(Measurement.ts_value).label('obs'))
-               .group_by(Measurement.well_id)
-               .filter(Measurement.well_id.in_(wells_list),
-                       Measurement.variable_id == variable_id))
+    wells_list = [
+        r.id
+        for r in session.query(Well.id).filter(Well.aquifer_id == aquifer_id).distinct()
+    ]
+    m_query = (
+        session.query(
+            Measurement.well_id, func.count(Measurement.ts_value).label("obs")
+        )
+        .group_by(Measurement.well_id)
+        .filter(
+            Measurement.well_id.in_(wells_list), Measurement.variable_id == variable_id
+        )
+    )
     obs_dict = {w.well_id: w.obs for w in m_query}
     zero_obs_wells = set(wells_list) - set(obs_dict.keys())
     for well in zero_obs_wells:
@@ -823,13 +923,14 @@ def get_well_info(well_id: str) -> Dict:
         A Dictionary with Well metadata that will be showed in the timeseries chart
     """
     session = get_session_obj()
-    well_id = well_id.split('.')[1]
+    well_id = well_id.split(".")[1]
     well = session.query(Well).filter(Well.id == well_id).first()
-    json_dict = {"id": well.id,
-                 "well_name": well.well_name,
-                 "gse": well.gse,
-                 "attr_dict": json.dumps(well.attr_dict)
-                 }
+    json_dict = {
+        "id": well.id,
+        "well_name": well.well_name,
+        "gse": well.gse,
+        "attr_dict": json.dumps(well.attr_dict),
+    }
 
     session.close()
     return json_dict
@@ -846,7 +947,7 @@ def create_outlier(well_id: str) -> bool:
         Outlier boolean of the well
     """
     session = get_session_obj()
-    well_id = well_id.split('.')[1]
+    well_id = well_id.split(".")[1]
     well_obj = session.query(Well).filter(Well.id == well_id).first()
     set_value = not well_obj.outlier
     well_obj.outlier = set_value
@@ -868,21 +969,29 @@ def get_wms_datasets(aquifer_name: str, variable_id: str, region_id: str) -> Lis
     Returns:
         List of lists Thredds WMS Urls and File Names
     """
-    catalog = app.get_custom_setting('gw_thredds_catalog')
+    catalog = app.get_custom_setting("gw_thredds_catalog")
     aquifer_name = aquifer_name.replace(" ", "_")
     c = TDSCatalog(catalog)
     # file_str = f'{region_id}/{aquifer_name}/{aquifer_name}_{variable_id}'
     try:
-        urls = [[name, ds.access_urls['WMS']] for name, ds in
-                c.catalog_refs[f'{region_id}'].follow().catalog_refs[f'{aquifer_name}'].follow().datasets.items()
-                if f'_{variable_id}_' in name]
+        urls = [
+            [name, ds.access_urls["WMS"]]
+            for name, ds in c.catalog_refs[f"{region_id}"]
+            .follow()
+            .catalog_refs[f"{aquifer_name}"]
+            .follow()
+            .datasets.items()
+            if f"_{variable_id}_" in name
+        ]
     except KeyError:
         urls = []
 
     return urls
 
 
-def get_wms_metadata(aquifer_name: str, file_name: str, region_id: str) -> Tuple[int, int]:
+def get_wms_metadata(
+    aquifer_name: str, file_name: str, region_id: str
+) -> Tuple[int, int]:
     """
     Get min and max for selected wms layer
 
@@ -894,7 +1003,7 @@ def get_wms_metadata(aquifer_name: str, file_name: str, region_id: str) -> Tuple
     Returns:
         The min and max value for a selected interpolation netcdf file
     """
-    thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+    thredds_directory = app.get_custom_setting("gw_thredds_directoy")
     # aquifer_dir = os.path.join(thredds_directory, str(region_id), str(aquifer_obj[1]))
     aquifer_name = aquifer_name.replace(" ", "_")
     file_path = os.path.join(thredds_directory, str(region_id), aquifer_name, file_name)
@@ -917,31 +1026,35 @@ def get_geoserver_status() -> dict:
     Returns:
         A dict with workspace, store, and layer status
     """
-    gs_engine = app.get_spatial_dataset_service('primary_geoserver', as_engine=True)
-    workspaces = gs_engine.list_workspaces()['result']
-    ws_name = 'gwdm'
-    store_name = 'postgis'
+    gs_engine = app.get_spatial_dataset_service("primary_geoserver", as_engine=True)
+    workspaces = gs_engine.list_workspaces()["result"]
+    ws_name = "gwdm"
+    store_name = "postgis"
     if ws_name in workspaces:
-        workspace_status = 'Configured'
-        stores = gs_engine.list_stores(workspace=ws_name)['result']
+        workspace_status = "Configured"
+        stores = gs_engine.list_stores(workspace=ws_name)["result"]
         if store_name in stores:
-            store_status = 'Configured'
-            layers = gs_engine.list_resources(store=store_name, workspace=ws_name)['result']
-            if all(x in layers for x in ['well', 'aquifer', 'region']):
-                layer_status = 'Configured'
+            store_status = "Configured"
+            layers = gs_engine.list_resources(store=store_name, workspace=ws_name)[
+                "result"
+            ]
+            if all(x in layers for x in ["well", "aquifer", "region"]):
+                layer_status = "Configured"
             else:
-                layer_status = 'Not Setup'
+                layer_status = "Not Setup"
         else:
-            store_status = 'Not Setup'
-            layer_status = 'Not Setup'
+            store_status = "Not Setup"
+            layer_status = "Not Setup"
     else:
-        workspace_status = 'Not Setup'
-        store_status = 'Not Setup'
-        layer_status = 'Not Setup'
+        workspace_status = "Not Setup"
+        store_status = "Not Setup"
+        layer_status = "Not Setup"
 
-    status = {'workspace_status': workspace_status,
-              'store_status': store_status,
-              'layer_status': layer_status}
+    status = {
+        "workspace_status": workspace_status,
+        "store_status": store_status,
+        "layer_status": layer_status,
+    }
     return status
 
 
@@ -953,13 +1066,13 @@ def get_thredds_status() -> dict:
         A dict with the thredds groundwater directory status
     """
 
-    thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+    thredds_directory = app.get_custom_setting("gw_thredds_directoy")
     if os.path.exists(thredds_directory):
-        directory_status = 'Configured'
+        directory_status = "Configured"
     else:
-        directory_status = 'Not Setup'
+        directory_status = "Not Setup"
 
-    status = {'directory_status': directory_status}
+    status = {"directory_status": directory_status}
     return status
 
 
@@ -979,35 +1092,37 @@ def delete_measurements(region: str, aquifer: str, variable: str) -> dict:
     try:
         region_id = int(region)
         session = get_session_obj()
-        if aquifer == 'all':
+        if aquifer == "all":
             aquifers_list = get_region_aquifers_list(region_id)
             aquifers = [aqf[1] for aqf in aquifers_list]
-        elif ',' in aquifer:
-            aquifers = [int(aqf) for aqf in aquifer.split(',')]
+        elif "," in aquifer:
+            aquifers = [int(aqf) for aqf in aquifer.split(",")]
         else:
             aquifers = [int(aquifer)]
 
-        if variable == 'all':
+        if variable == "all":
             variables_list = get_region_variables_list(region_id)
             variables = [var[1] for var in variables_list]
-        elif ',' in variable:
-            variables = [int(var) for var in variable.split(',')]
+        elif "," in variable:
+            variables = [int(var) for var in variable.split(",")]
         else:
             variables = [int(variable)]
 
-        measurements_query = (session.query(Measurement)
-                              .join(Well, Measurement.well_id == Well.id)
-                              .filter(Measurement.variable_id.in_(variables),
-                                      Well.aquifer_id.in_(aquifers))
-                              ).all()
+        measurements_query = (
+            session.query(Measurement)
+            .join(Well, Measurement.well_id == Well.id)
+            .filter(
+                Measurement.variable_id.in_(variables), Well.aquifer_id.in_(aquifers)
+            )
+        ).all()
 
         for meas in measurements_query:
             session.delete(meas)
         session.commit()
         session.close()
-        response['success'] = 'success'
+        response["success"] = "success"
     except Exception as e:
-        response['error'] = str(e)
+        response["error"] = str(e)
     return response
 
 
@@ -1025,11 +1140,11 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
     response = {}
     try:
         region_id = int(region)
-        if aquifer == 'all':
+        if aquifer == "all":
             aquifers_list = get_region_aquifers_list(region_id)
             aquifers = [aqf[1] for aqf in aquifers_list]
-        elif ',' in aquifer:
-            aquifers = [int(aqf) for aqf in aquifer.split(',')]
+        elif "," in aquifer:
+            aquifers = [int(aqf) for aqf in aquifer.split(",")]
         else:
             aquifers = [int(aquifer)]
         session = get_session_obj()
@@ -1038,9 +1153,9 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
             session.delete(well)
         session.commit()
         session.close()
-        response['success'] = 'success'
+        response["success"] = "success"
     except Exception as e:
-        response['error'] = str(e)
+        response["error"] = str(e)
 
     return response
 
@@ -1060,7 +1175,7 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any) -> Dic
     """
     response = {}
     try:
-        thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+        thredds_directory = app.get_custom_setting("gw_thredds_directoy")
         region_dir = os.path.join(thredds_directory, str(region))
         aquifer = aquifer.replace(" ", "_")
         if not os.path.exists(region_dir):
@@ -1069,13 +1184,13 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any) -> Dic
         if not os.path.exists(aquifer_dir):
             os.makedirs(aquifer_dir)
         for f in file:
-            f_name = f'{aquifer}_{variable}_{time.time()}.nc'
+            f_name = f"{aquifer}_{variable}_{time.time()}.nc"
             f_path = os.path.join(aquifer_dir, f_name)
-            with open(f_path, 'wb') as f_local:
+            with open(f_path, "wb") as f_local:
                 f_local.write(f.read())
-        response['success'] = 'success'
+        response["success"] = "success"
     except Exception as e:
-        response['error'] = str(e)
+        response["error"] = str(e)
     return response
 
 
@@ -1092,28 +1207,29 @@ def delete_bulk_rasters(region: str, aquifer: str, variable: str, raster: str) -
     Returns:
         JSON Dict indicating if the files were deleted
     """
+    print(raster)
     response = {}
     try:
         region_id = int(region)
-        all_aquifers = 'All Aquifers'
-        all_str = 'all'
+        all_aquifers = "All Aquifers"
+        all_str = "all"
         if aquifer == all_aquifers:
             aquifers_list = get_region_aquifers_list(region_id)
             aquifers = [aqf[0].replace(" ", "_") for aqf in aquifers_list]
-        elif ',' in aquifer:
-            aquifers = [aqf.replace(" ", "_") for aqf in aquifer.split(',')]
+        elif "," in aquifer:
+            aquifers = [aqf.replace(" ", "_") for aqf in aquifer.split(",")]
         else:
             aquifers = [aquifer.replace(" ", "_")]
 
         if variable == all_str:
             variables_list = get_region_variables_list(region_id)
             variables = [v[1] for v in variables_list]
-        elif ',' in aquifer:
-            variables = [v for v in variable.split(',')]
+        elif "," in aquifer:
+            variables = [v for v in variable.split(",")]
         else:
             variables = [variable]
 
-        thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+        thredds_directory = app.get_custom_setting("gw_thredds_directoy")
         region_dir = os.path.join(thredds_directory, str(region_id))
         if aquifer == all_aquifers and variable == all_str and raster == all_str:
             shutil.rmtree(region_dir)
@@ -1121,27 +1237,33 @@ def delete_bulk_rasters(region: str, aquifer: str, variable: str, raster: str) -
             for aqf in aquifers:
                 for var in variables:
                     if raster == all_str:
-                        raster_files = glob.glob(os.path.join(region_dir, aqf, f'*_{var}_*.nc'))
+                        raster_files = glob.glob(
+                            os.path.join(region_dir, aqf, f"*_{var}_*.nc")
+                        )
                         for r_file in raster_files:
                             os.remove(r_file)
                     else:
-                        if ',' in raster:
-                            rasters = [r for r in raster.split(',')]
+                        if "," in raster:
+                            rasters = [r for r in raster.split(",")]
+                            print(rasters)
                             for rast in rasters:
                                 r_file = os.path.join(region_dir, aqf, rast)
+                                print(r_file)
                                 os.remove(r_file)
                         else:
                             r_file = os.path.join(region_dir, aqf, raster)
                             os.remove(r_file)
         elif variable != all_str and aquifer == all_aquifers:
             for aqf in aquifers:
-                raster_files = glob.glob(os.path.join(region_dir, aqf, f'*_{variable}_*.nc'))
+                raster_files = glob.glob(
+                    os.path.join(region_dir, aqf, f"*_{variable}_*.nc")
+                )
                 for r_file in raster_files:
                     os.remove(r_file)
 
     except Exception as e:
-        response['error'] = str(e)
-    response['success'] = 'success'
+        response["error"] = str(e)
+    response["success"] = "success"
     return response
 
 
@@ -1155,11 +1277,11 @@ def delete_region_thredds_dir(region_id: str) -> str:
     Returns:
         Success message on region deleted
     """
-    thredds_directory = app.get_custom_setting('gw_thredds_directoy')
+    thredds_directory = app.get_custom_setting("gw_thredds_directoy")
     region_path = os.path.join(thredds_directory, region_id)
     if os.path.exists(region_path):
         shutil.rmtree(region_path)
-        status = 'success'
+        status = "success"
         return status
 
 
@@ -1172,9 +1294,9 @@ def date_format_validator(date_format: str) -> bool:
     Returns:
         Boolean indicating if the format is good
     """
-    test_date = '12-31-1999'
+    test_date = "12-31-1999"
     try:
-        valid_date = datetime.strptime(test_date, '%m-%d-%Y').strftime(date_format)
+        valid_date = datetime.strptime(test_date, "%m-%d-%Y").strftime(date_format)
         if valid_date == date_format or len(valid_date) == 0:
             is_valid = False
         else:

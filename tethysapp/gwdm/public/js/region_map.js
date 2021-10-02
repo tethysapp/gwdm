@@ -551,7 +551,7 @@ var LIBRARY_OBJECT = (function() {
                     },
                     marker: {
                         enabled: true,
-                        radius: 6
+                        radius: 3
                     }
                 }
             },
