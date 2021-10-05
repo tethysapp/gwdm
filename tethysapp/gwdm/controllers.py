@@ -147,58 +147,17 @@ def interpolation(request):
     output_file_input = TextInput(
         display_text="Output Filename", name="output-file-input"
     )
-    select_porosity = TextInput(
-        display_text="Enter the storage coefficient for the aquifer:",
-        name="select-porosity",
-        initial="0.1",
-    )
     temporal_interpolation = SelectInput(
         display_text="Temporal Interpolation Method",
         name="select-temporal-interpolation",
         multiple=False,
-        options=[("Pchip Interpolation", "pchip"), ("Multi-Linear Regression", "MLR")],
+        options=[
+            # ("Pchip Interpolation", "pchip"),
+            ("Multi-Linear Regression", "MLR")
+        ],
         initial="Multi-Linear Regression",
     )
-    well_sample_options = [(i, i) for i in range(101)]
-    well_sample_options.append(("No Maximum", 999))
-    rads = [(float(i) / 10.0, float(i) / 10.0) for i in range(1, 50)]
-    for i in range(5, 10, 1):
-        rads.append((i, i))
-    dates = [(i, i) for i in range(1850, 2021)]
-    tolerances = [(f"{i} Year", i) for i in range(1, 26)]
-    tolerances.append(("50 Years", 50))
-    tolerances.append(("No Limit", 999))
-    ratios = [(f"{i}%", float(i) / 100) for i in range(5, 105, 5)]
-    ratios.append(("No Minimum", 0))
 
-    min_ratio = SelectInput(
-        display_text="Percent of Time Frame Well Timeseries Must Span",
-        name="min-ratio",
-        options=ratios,
-        initial="25%",
-    )
-    time_tolerance = SelectInput(
-        display_text="Temporal Extrapolation Limit",
-        name="time-tolerance",
-        multiple=False,
-        options=tolerances,
-        initial="20 Year",
-    )
-    frequency = SelectInput(
-        display_text="Time Increment",
-        name="frequency",
-        multiple=False,
-        options=[
-            ("3 months", 0.25),
-            ("6 months", 0.5),
-            ("1 year", 1),
-            ("2 years", 2),
-            ("5 years", 5),
-            ("10 years", 10),
-            ("25 years", 25),
-        ],
-        initial="5 years",
-    )
     min_samples = SelectInput(
         display_text="Minimum Water Level Samples per Well",
         name="min-samples",
@@ -251,9 +210,6 @@ def interpolation(request):
         "variable_select": variable_select,
         "output_file_input": output_file_input,
         "temporal_interpolation": temporal_interpolation,
-        "frequency": frequency,
-        "min_ratio": min_ratio,
-        "time_tolerance": time_tolerance,
         "min_samples": min_samples,
         "gap_size": gap_size,
         "pad": pad,

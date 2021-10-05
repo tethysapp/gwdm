@@ -66,51 +66,11 @@ var LIBRARY_OBJECT = (function() {
         let aquifer = $("#aquifer-select option:selected").val();
         let variable = $("#variable-select option:selected").val();
         let file_name = $("#output-file-input").val();
-        let porosity = $("#select-porosity").val();
-        let spatial_interpolation = $("#select-spatial-interpolation option:selected").val();
         let temporal_interpolation = $("#select-temporal-interpolation option:selected").val();
-        // var interpolation_options = $("#interpolation_options option:selected").val();
-        let search_radius = $("#select-search-radius option:selected").val();
-        let ndmin = $("#select-ndmin option:selected").val();
-        let ndmax = $("#select-ndmax option:selected").val();
-        let start_date = $("#start-date option:selected").val();
-        let end_date = $("#end-date option:selected").val();
-        let resolution = $("#resolution option:selected").val();
-        let min_ratio = $("#min-ratio option:selected").val();
-        let time_tolerance = $("#time-tolerance option:selected").val();
-        let frequency = $("#frequency option:selected").val();
-        let default_val = $("#default option:selected").val();
         let min_samples = $("#min-samples option:selected").val();
-        let seasonal = $("#seasonal option:selected").val();
         let gap = $("#gap-size-input").val();
         let spacing = $("#spacing-input").val();
         let pad = $("#pad-input").val();
-
-        // form_validator(region, "Region cannot be empty!");
-        // if(region === ""){
-        //     addErrorMessage("Region Cannot Be empty");
-        //     return false;
-        // }else{
-        //     reset_alert();
-        // }
-        // if(aquifer === ""){
-        //     addErrorMessage("Aquifer Cannot Be empty");
-        //     return false;
-        // }else{
-        //     reset_alert();
-        // }
-        // if(variable === ""){
-        //     addErrorMessage("Variable Cannot Be empty");
-        //     return false;
-        // }else{
-        //     reset_alert();
-        // }
-        // form_validator(aquifer, "Aquifer cannot be empty!");
-        // form_validator(variable, "Variable cannot be empty!");
-        // form_validator(porosity, "Porosity cannot be empty!");
-        // form_validator(spatial_interpolation, "Spatial Interpolation cannot be empty!");
-        // form_validator(temporal_interpolation, "Temporal Interpolation cannot be empty!");
-        // form_validator(interpolation_options, "Interpolation options cannot be empty!");
 
         addInfoMessage("Interpolation in Progress. Please wait...","message");
         let data = new FormData();
@@ -119,9 +79,6 @@ var LIBRARY_OBJECT = (function() {
         data.append("variable", variable);
         data.append("file_name", file_name)
         data.append("temporal_interpolation", temporal_interpolation);
-        data.append("min_ratio", min_ratio);
-        data.append("time_tolerance", time_tolerance);
-        data.append("frequency", frequency);
         data.append("min_samples", min_samples);
         data.append("gap_size", gap);
         data.append("spacing", spacing);

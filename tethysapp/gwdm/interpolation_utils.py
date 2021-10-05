@@ -586,11 +586,11 @@ def mlr_interpolation(mlr_dict):
         sort=False,
     )
     wells_df.drop_duplicates(inplace=True)
-    wells_df.to_csv("wells_one.csv")
+    # wells_df.to_csv("wells_one.csv")
     wells_df.dropna(thresh=min_samples, axis=1, inplace=True)
     well_interp_df = interp_well(wells_df, gap_size, pad, spacing)
     well_interp_df.dropna(thresh=min_samples, axis=1, inplace=True)
-    well_interp_df.to_csv("well_interp.csv")
+    # well_interp_df.to_csv("well_interp.csv")
 
     # combine the  data from the wells and the satellite observations  to a single dataframe (combined_df)
     # this will have a row for every measurement (on the start of the month) a column for each well,
@@ -640,20 +640,8 @@ def mlr_interpolation(mlr_dict):
 
 def process_interpolation(info_dict):
 
-    interval = int(info_dict["frequency"])
     file_output = info_dict["file_name"]
     process_start_time = time.time()
-    time_u = "Y"
-
-    if interval <= 0.5:
-        time_u = "M"
-        time_v = 6
-        if interval == 0.25:
-            time_v = 3
-    else:
-        time_v = int(interval)
-
-    resample_rate = f"{time_v}{time_u}"
 
     temporal_interpolation = info_dict["temporal_interpolation"]
     min_samples = int(info_dict["min_samples"])
@@ -666,8 +654,6 @@ def process_interpolation(info_dict):
         aquifer_list = [int(aquifer_id)]
 
     variable = int(info_dict["variable"])
-    min_ratio = float(info_dict["min_ratio"])
-    time_tolerance = int(info_dict["time_tolerance"])
     gap_size = info_dict["gap_size"]
     pad = int(info_dict["pad"])
     spacing = info_dict["spacing"]
@@ -682,9 +668,6 @@ def process_interpolation(info_dict):
                 "file_output": file_output,
                 "min_samples": min_samples,
                 "variable": variable,
-                "min_ratio": min_ratio,
-                "time_tolerance": time_tolerance,
-                "resample_rate": resample_rate,
                 "gap_size": gap_size,
                 "pad": pad,
                 "spacing": spacing,
@@ -705,13 +688,3 @@ def process_interpolation(info_dict):
         "failed": success_tracker.count("error"),
     }
     return return_obj
-
-
-wizard_dict = {'region': '4', 'aquifer': '44', 'variable': '1', 'file_name': 'tust',
-               'temporal_interpolation': 'MLR', 'resolution': '0.05', 'min_ratio': '0.25',
-               'time_tolerance': '20', 'frequency': '5', 'min_samples': '10',
-               'gap_size': '365 days', 'spacing': '1MS', 'pad': '90'}
-mlr_dict = {'region': 4, 'aquifer': 44, 'file_output': 'test', 'min_samples': 10,
-            'variable': 1, 'min_ratio': 0.25, 'time_tolerance': 20,
-            'resample_rate': '5Y', 'gap_size': '365 days', 'pad': 90, 'spacing': '1MS'}
-
