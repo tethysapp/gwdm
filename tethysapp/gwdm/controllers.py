@@ -145,7 +145,17 @@ def interpolation(request):
     aquifer_select = get_aquifer_select(None)
     variable_select = get_region_variable_select(None)
     output_file_input = TextInput(
-        display_text="Output Filename", name="output-file-input"
+        display_text="Output Filename. Unique Identifier to differentiate from different interpolation runs.",
+        name="output-file-input"
+    )
+    raster_extent_select = SelectInput(
+        display_text="Raster Extent",
+        name="select-raster-extent",
+        multiple=False,
+        options=[
+            ("Aquifer Extent", "aquifer"),
+            ("Well Data Extent", "wells")
+        ]
     )
     temporal_interpolation = SelectInput(
         display_text="Temporal Interpolation Method",
@@ -209,6 +219,7 @@ def interpolation(request):
         "aquifer_select": aquifer_select,
         "variable_select": variable_select,
         "output_file_input": output_file_input,
+        "raster_extent_select": raster_extent_select,
         "temporal_interpolation": temporal_interpolation,
         "min_samples": min_samples,
         "gap_size": gap_size,

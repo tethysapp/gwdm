@@ -346,6 +346,12 @@ class Gwdm(TethysAppBase):
 
         custom_settings = (
             CustomSetting(
+                name="gw_data_directory",
+                type=CustomSetting.TYPE_STRING,
+                description="Path to the Ground Water Data Directory",
+                required=True,
+            ),
+            CustomSetting(
                 name="gw_thredds_directoy",
                 type=CustomSetting.TYPE_STRING,
                 description="Path to the Ground Water Thredds Directory",

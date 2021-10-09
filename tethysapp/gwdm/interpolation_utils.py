@@ -178,6 +178,25 @@ def get_thredds_value(server, layer, bbox):
     return df
 
 
+def get_pdsi_df(aquifer_obj):
+    data_dir = app.get_custom_setting("gw_data_directory")
+    nc_file = os.path.join(data_dir, "pdsi.nc4")
+    pdsi_ds = xarray.open_dataset(nc_file, decode_times=False)
+    units, _, reference_date = pdsi_ds.time.attrs['units'].split('since')
+    pdsi_ds['time'] = pd.date_range(start=reference_date, periods=pdsi_ds.sizes['time'], freq='MS')
+    ds = pdsi_ds['pdsi_filled'].to_dataset()
+    ds['pdsi_filled'] = ds['pdsi_filled'].rio.write_crs("epsg:4326")
+    ds.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=True)
+    aquifer_geom = wkt.loads(aquifer_obj[0])
+    aquifer_gdf = gpd.GeoDataFrame({"name": ["random"], "geometry": [aquifer_geom]}, crs="EPSG:4326")
+    clipped_ds = (ds.rio.clip(aquifer_gdf.geometry.apply(mapping),
+                              aquifer_gdf.crs, drop=True, all_touched=True).drop('spatial_ref'))
+    filled_df = (clipped_ds.to_dataframe()
+                 .reset_index().groupby("time")["pdsi_filled"]
+                 .mean().reset_index().set_index('time'))
+    return filled_df
+
+
 def sat_resample(gldas_df):
     # resamples the data from both datasets to a monthly value,
     # uses the mean of all measurements in a month
@@ -298,18 +317,25 @@ def plot_imputed_results(wells_df, combined_df, imputed_df, well_names):
     im_plots.close()
 
 
-def create_grid_coords(x_c, y_c, x_steps):
+def create_grid_coords(x_c, y_c, x_steps, bbox, raster_extent):
     # create grid coordinates fro kriging, make x and y steps the same
     # x_steps is the number of cells in the x-direction
+    min_x = min_y = max_x = max_y = None
+    if raster_extent == "aquifer":
+        min_x, min_y, max_x, max_y = bbox
+    elif raster_extent == "wells":
+        min_x, max_x = min(x_c), max(x_c)
+        min_y, max_y = min(y_c), max(y_c)
+
     n_bin = np.absolute(
-        (max(x_c) - min(x_c)) / x_steps
+        (max_x - min_x) / x_steps
     )  # determine step size (positive)
     # make grid 10 bin steps bigger than date, will give 110 steps in x-direction
     grid_x = np.arange(
-        min(x_c) - 5 * n_bin, max(x_c) + 5 * n_bin, n_bin
+        min_x - 5 * n_bin, max_x + 5 * n_bin, n_bin
     )  # make grid 10 steps bigger than data
     grid_y = np.arange(
-        min(y_c) - 5 * n_bin, max(y_c) + 5 * n_bin, n_bin
+        min_y - 5 * n_bin, max_y + 5 * n_bin, n_bin
     )  # make grid 10 steps bigger than data
 
     return grid_x, grid_y
@@ -387,13 +413,19 @@ def krig_map_generate(var_fitted, x_c, y_c, values, grid_x, grid_y):
     return krig_map
 
 
-def fit_model_var(coords_df, x_c, y_c, values):
+def fit_model_var(coords_df, x_c, y_c, values, bbox, raster_extent):
     # fit the model varigrom to the experimental variogram
     bin_num = 20  # number of bins in the experimental variogram
+    min_x = min_y = max_x = max_y = None
+    if raster_extent == "aquifer":
+        min_x, min_y, max_x, max_y = bbox
+    elif raster_extent == "wells":
+        min_x, max_x = min(x_c), max(x_c)
+        min_y, max_y = min(y_c), max(y_c)
 
     # first get the coords and determine distances
-    x_delta = max(x_c) - min(x_c)  # distance across x coords
-    y_delta = max(y_c) - min(y_c)  # distance across y coords
+    x_delta = max_x - min_x  # distance across x coords
+    y_delta = max_y - min_y  # distance across y coords
     max_dist = (
         np.sqrt(np.square(x_delta + y_delta)) / 4
     )  # assume correlated over 1/4 of distance
@@ -419,7 +451,7 @@ def fit_model_var(coords_df, x_c, y_c, values):
 
     data_var = np.var(values)
     data_std = np.std(values)
-    fit_var = gs.Stable(dim=2, var=data_var, len_scale=max_dist / 4, nugget=data_std)
+    fit_var = gs.Stable(dim=2, var=data_var, len_scale=max_dist, nugget=data_std)
     plt_var = False
     if plt_var:
         # plot the variogram to show fit and print out variogram paramters
@@ -454,16 +486,16 @@ def extract_query_objects(region_id, aquifer_id, variable):
 
     session.close()
 
-    return (bbox, wells_query_df, measurements_df, aquifer_obj)
+    return bbox, wells_query_df, measurements_df, aquifer_obj
 
 
-def krig_imputed_wells(years_df, coords_df, values, x_coords, y_coords, grid_x, grid_y):
+def krig_imputed_wells(years_df, coords_df, values, x_coords, y_coords, grid_x, grid_y, bbox, raster_extent):
     krig_plots = plt_pdf.PdfPages("Krig.pdf")
     for measurement in years_df:
         # loop through the data
         values = years_df[measurement].values
         # fit the model variogram to the experimental variogram
-        var_fitted = fit_model_var(coords_df, x_coords, y_coords, values)
+        var_fitted = fit_model_var(coords_df, x_coords, y_coords, values, bbox, raster_extent)
 
         krig_map = krig_map_generate(
             var_fitted, x_coords, y_coords, values, grid_x, grid_y
@@ -483,19 +515,19 @@ def krig_imputed_wells(years_df, coords_df, values, x_coords, y_coords, grid_x, 
 
 
 def generate_nc_file(
-    file_name, grid_x, grid_y, years_df, coords_df, x_coords, y_coords
+    file_name, grid_x, grid_y, years_df, coords_df, x_coords, y_coords, bbox, raster_extent
 ):
     temp_dir = tempfile.mkdtemp()
     file_path = os.path.join(temp_dir, file_name)
     h = netCDF4.Dataset(file_path, "w", format="NETCDF4")
     lat_len = len(grid_y)
     lon_len = len(grid_x)
-    time = h.createDimension("time", 0)
+    time_dim = h.createDimension("time", 0)
     lat = h.createDimension("lat", lat_len)
     lon = h.createDimension("lon", lon_len)
     latitude = h.createVariable("lat", np.float64, ("lat"))
     longitude = h.createVariable("lon", np.float64, ("lon"))
-    time = h.createVariable("time", np.float64, ("time"), fill_value="NaN")
+    time_dim = h.createVariable("time", np.float64, ("time"), fill_value="NaN")
     ts_value = h.createVariable(
         "tsvalue", np.float64, ("time", "lon", "lat"), fill_value=-9999
     )
@@ -505,8 +537,8 @@ def generate_nc_file(
     longitude.long_name = "Longitude"
     longitude.units = "degrees_east"
     longitude.axis = "X"
-    time.axis = "T"
-    time.units = "days since 0001-01-01 00:00:00 UTC"
+    time_dim.axis = "T"
+    time_dim.units = "days since 0001-01-01 00:00:00 UTC"
 
     latitude[:] = grid_y[:]
     longitude[:] = grid_x[:]
@@ -519,14 +551,14 @@ def generate_nc_file(
         beg_time = timer()  # time the kriging method including variogram fitting
         # fit the model variogram to the experimental variogram
         var_fitted = fit_model_var(
-            coords_df, x_coords, y_coords, values
+            coords_df, x_coords, y_coords, values, bbox, raster_extent
         )  # fit variogram
         krig_map = krig_field_generate(
             var_fitted, x_coords, y_coords, values, grid_x, grid_y
         )  # krig data
         # krig_map.field provides the 2D array of values
         end_time = timer()
-        time[time_counter] = measurement.toordinal()
+        time_dim[time_counter] = measurement.toordinal()
         ts_value[time_counter, :, :] = krig_map.field
         time_counter += 1
 
@@ -567,11 +599,13 @@ def mlr_interpolation(mlr_dict):
     pad = mlr_dict["pad"]
     spacing = mlr_dict["spacing"]
     file_output = mlr_dict["file_output"]
+    raster_extent = mlr_dict["raster_extent"]
 
     bbox, wells_query_df, measurements_df, aquifer_obj = extract_query_objects(
         region_id, aquifer_id, variable
     )
-    pdsi_df = get_thredds_value(SERVER1, LAYER1, bbox)  # pdsi values
+    # pdsi_df = get_thredds_value(SERVER1, LAYER1, bbox)  # pdsi values
+    pdsi_df = get_pdsi_df(aquifer_obj)
     soilw_df = get_thredds_value(SERVER2, LAYER2, bbox)  # soilw values
     gldas_df = pd.concat([pdsi_df, soilw_df], join="outer", axis=1)
     gldas_df = sat_resample(gldas_df)
@@ -620,7 +654,7 @@ def mlr_interpolation(mlr_dict):
     # create grid
     x_steps = 400  # steps in x-direction, number of y-steps will be computed with same spacing, adds 10%
     grid_x, grid_y = create_grid_coords(
-        x_coords, y_coords, x_steps
+        x_coords, y_coords, x_steps, bbox, raster_extent
     )  # coordinates for x and y axis - not full grid
 
     skip_month = 48  # take data every nth month (skip_months), e.g., 60 = every 5 years
@@ -632,7 +666,7 @@ def mlr_interpolation(mlr_dict):
     # setup a netcdf file to store the time series of rasters
     #
     nc_file_path = generate_nc_file(
-        file_name, grid_x, grid_y, years_df, coords_df, x_coords, y_coords
+        file_name, grid_x, grid_y, years_df, coords_df, x_coords, y_coords, bbox, raster_extent
     )
     final_nc_path = clip_nc_file(nc_file_path, aquifer_obj, region_id)
     return final_nc_path
@@ -665,6 +699,7 @@ def process_interpolation(info_dict):
             mlr_dict = {
                 "region": region_id,
                 "aquifer": aquifer,
+                "raster_extent": info_dict["raster_extent"],
                 "file_output": file_output,
                 "min_samples": min_samples,
                 "variable": variable,

@@ -66,6 +66,7 @@ var LIBRARY_OBJECT = (function() {
         let aquifer = $("#aquifer-select option:selected").val();
         let variable = $("#variable-select option:selected").val();
         let file_name = $("#output-file-input").val();
+        let raster_extent = $("#select-raster-extent option:selected").val();
         let temporal_interpolation = $("#select-temporal-interpolation option:selected").val();
         let min_samples = $("#min-samples option:selected").val();
         let gap = $("#gap-size-input").val();
@@ -78,6 +79,7 @@ var LIBRARY_OBJECT = (function() {
         data.append("aquifer", aquifer);
         data.append("variable", variable);
         data.append("file_name", file_name)
+        data.append("raster_extent", raster_extent);
         data.append("temporal_interpolation", temporal_interpolation);
         data.append("min_samples", min_samples);
         data.append("gap_size", gap);
