@@ -620,6 +620,7 @@ def mlr_interpolation(mlr_dict):
         sort=False,
     )
     wells_df.drop_duplicates(inplace=True)
+    wells_df[wells_df == 0] = np.nan
     # wells_df.to_csv("wells_one.csv")
     wells_df.dropna(thresh=min_samples, axis=1, inplace=True)
     well_interp_df = interp_well(wells_df, gap_size, pad, spacing)
