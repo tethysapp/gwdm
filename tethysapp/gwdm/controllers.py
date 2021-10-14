@@ -167,7 +167,18 @@ def interpolation(request):
         ],
         initial="Multi-Linear Regression",
     )
-
+    raster_interval = SelectInput(
+        display_text="Select Time Interval",
+        name="select-raster-interval",
+        multiple=False,
+        options=[
+            ("1 year", 12),
+            ("2 years", 24),
+            ("3 years", 36),
+            ("4 years", 48),
+            ("5 years", 60),
+        ]
+    )
     min_samples = SelectInput(
         display_text="Minimum Water Level Samples per Well",
         name="min-samples",
@@ -221,6 +232,7 @@ def interpolation(request):
         "output_file_input": output_file_input,
         "raster_extent_select": raster_extent_select,
         "temporal_interpolation": temporal_interpolation,
+        "raster_interval": raster_interval,
         "min_samples": min_samples,
         "gap_size": gap_size,
         "pad": pad,

@@ -600,6 +600,7 @@ def mlr_interpolation(mlr_dict):
     spacing = mlr_dict["spacing"]
     file_output = mlr_dict["file_output"]
     raster_extent = mlr_dict["raster_extent"]
+    raster_interval = mlr_dict["raster_interval"]
 
     bbox, wells_query_df, measurements_df, aquifer_obj = extract_query_objects(
         region_id, aquifer_id, variable
@@ -639,6 +640,7 @@ def mlr_interpolation(mlr_dict):
     combined_df.dropna(how="all", axis=1, inplace=True)
 
     norm_df = norm_training_data(combined_df, combined_df)
+    norm_df.dropna(how="all", axis=1, inplace=True)
     well_names = [col for col in well_interp_df.columns if col in norm_df.columns]
     imputed_norm_df = impute_data(norm_df, well_names, names)
     ref_df = combined_df[well_names]
@@ -658,9 +660,9 @@ def mlr_interpolation(mlr_dict):
         x_coords, y_coords, x_steps, bbox, raster_extent
     )  # coordinates for x and y axis - not full grid
 
-    skip_month = 48  # take data every nth month (skip_months), e.g., 60 = every 5 years
+    # skip_month = 48  # take data every nth month (skip_months), e.g., 60 = every 5 years
     years_df = imputed_df.iloc[
-        ::skip_month
+        ::raster_interval
     ].T  # extract every nth month of data and transpose array
     aquifer_name = aquifer_obj[1].replace(" ", "_")
     file_name = f"{aquifer_name}_{variable}_{file_output}_{time.time()}.nc"
@@ -692,6 +694,7 @@ def process_interpolation(info_dict):
     gap_size = info_dict["gap_size"]
     pad = int(info_dict["pad"])
     spacing = info_dict["spacing"]
+    raster_interval = int(info_dict["raster_interval"])
     success_tracker = []
     print(info_dict)
 
@@ -701,6 +704,7 @@ def process_interpolation(info_dict):
                 "region": region_id,
                 "aquifer": aquifer,
                 "raster_extent": info_dict["raster_extent"],
+                "raster_interval": raster_interval,
                 "file_output": file_output,
                 "min_samples": min_samples,
                 "variable": variable,
@@ -713,6 +717,7 @@ def process_interpolation(info_dict):
                 mlr_interpolation(mlr_dict)
                 success_tracker.append("success")
             except Exception as e:
+                print(aquifer_id)
                 success_tracker.append("error")
                 continue
 
