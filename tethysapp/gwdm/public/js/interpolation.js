@@ -68,6 +68,9 @@ var LIBRARY_OBJECT = (function() {
         let file_name = $("#output-file-input").val();
         let raster_extent = $("#select-raster-extent option:selected").val();
         let raster_interval = $("#select-raster-interval option:selected").val();
+        let start_date = $("#start-date option:selected").val();
+        let end_date = $("#end-date option:selected").val();
+        let porosity = $("#select-porosity").val();
         let temporal_interpolation = $("#select-temporal-interpolation option:selected").val();
         let min_samples = $("#min-samples option:selected").val();
         let gap = $("#gap-size-input").val();
@@ -79,7 +82,10 @@ var LIBRARY_OBJECT = (function() {
         data.append("region", region);
         data.append("aquifer", aquifer);
         data.append("variable", variable);
-        data.append("file_name", file_name)
+        data.append("file_name", file_name);
+        data.append("start_date", start_date);
+        data.append("end_date", end_date);
+        data.append("porosity", porosity);
         data.append("raster_extent", raster_extent);
         data.append("raster_interval", raster_interval);
         data.append("temporal_interpolation", temporal_interpolation);
@@ -87,7 +93,6 @@ var LIBRARY_OBJECT = (function() {
         data.append("gap_size", gap);
         data.append("spacing", spacing);
         data.append("pad", pad);
-
 
         let submit_button = $("#submit");
         let submit_button_html = submit_button.html();
@@ -104,11 +109,11 @@ var LIBRARY_OBJECT = (function() {
                 console.log(return_data['error'])
             }
         });
-        // xhr.fail(function(xhr, status, error){
-        //     console.log(xhr.responseText);
-        //     addErrorMessage(xhr.responseText);
-        //     submit_button.html(submit_button_html)
-        // });
+        xhr.fail(function(xhr, status, error){
+            console.log(xhr.responseText);
+            addErrorMessage(xhr.responseText);
+            submit_button.html(submit_button_html)
+        });
     };
 
     $("#submit").click(submit_interpolation);

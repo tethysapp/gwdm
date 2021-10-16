@@ -144,6 +144,7 @@ def interpolation(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
     variable_select = get_region_variable_select(None)
+    dates = [(i, i) for i in range(1948, 2021)]
     output_file_input = TextInput(
         display_text="Output Filename. Unique Identifier to differentiate from different interpolation runs.",
         name="output-file-input"
@@ -194,6 +195,22 @@ def interpolation(request):
         ],
         initial="10 Samples",
     )
+    start_date = SelectInput(display_text='Interpolation Start Date',
+                             name='start-date',
+                             multiple=False,
+                             options=dates,
+                             initial=1970
+                             )
+    end_date = SelectInput(display_text='Interpolation End Date',
+                           name='end-date',
+                           multiple=False,
+                           options=dates,
+                           initial=1980
+                           )
+    select_porosity = TextInput(display_text='Enter the storage coefficient for the aquifer:',
+                                name='select-porosity',
+                                initial='0.1',
+                                )
 
     gap_size = TextInput(
         display_text="Enter GAP Size",
@@ -233,6 +250,9 @@ def interpolation(request):
         "raster_extent_select": raster_extent_select,
         "temporal_interpolation": temporal_interpolation,
         "raster_interval": raster_interval,
+        "start_date": start_date,
+        "end_date": end_date,
+        "select_porosity": select_porosity,
         "min_samples": min_samples,
         "gap_size": gap_size,
         "pad": pad,
