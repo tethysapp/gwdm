@@ -65,6 +65,8 @@ var LIBRARY_OBJECT = (function() {
         let region = $("#region-select option:selected").val();
         let aquifer = $("#aquifer-select option:selected").val();
         let variable = $("#variable-select option:selected").val();
+        let units = $("#select-units option:selected").val();
+        let storage_coefficient =$("#storage-coefficient-input").val();
         let file_name = $("#output-file-input").val();
         let raster_extent = $("#select-raster-extent option:selected").val();
         let raster_interval = $("#select-raster-interval option:selected").val();
@@ -82,6 +84,8 @@ var LIBRARY_OBJECT = (function() {
         data.append("region", region);
         data.append("aquifer", aquifer);
         data.append("variable", variable);
+        data.append("units", units);
+        data.append("storage_coefficient", storage_coefficient)
         data.append("file_name", file_name);
         data.append("start_date", start_date);
         data.append("end_date", end_date);

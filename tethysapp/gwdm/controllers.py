@@ -229,6 +229,17 @@ def interpolation(request):
         name="spacing-input",
         initial="1MS",
     )
+
+    storage_coefficient = TextInput(
+        display_text="Enter the Storage Coefficient",
+        name="storage-coefficient-input",
+        initial="0.05",
+    )
+    select_units = SelectInput(display_text='Select Units',
+                               name='select-units',
+                               options=[('English', 'English'), ("Metric", "Metric")],
+                               initial='English',
+                               )
     # 'gap_size': '365 days',
     # 'pad': '90',
     # 'spacing': '1MS'
@@ -248,6 +259,8 @@ def interpolation(request):
         "variable_select": variable_select,
         "output_file_input": output_file_input,
         "raster_extent_select": raster_extent_select,
+        "storage_coefficient": storage_coefficient,
+        "select_units": select_units,
         "temporal_interpolation": temporal_interpolation,
         "raster_interval": raster_interval,
         "start_date": start_date,
