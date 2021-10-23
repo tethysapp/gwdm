@@ -209,7 +209,7 @@ def interpolation(request):
                            )
     select_porosity = TextInput(display_text='Enter the storage coefficient for the aquifer:',
                                 name='select-porosity',
-                                initial='0.1',
+                                initial='0.05',
                                 )
 
     gap_size = TextInput(
@@ -230,11 +230,6 @@ def interpolation(request):
         initial="1MS",
     )
 
-    storage_coefficient = TextInput(
-        display_text="Enter the Storage Coefficient",
-        name="storage-coefficient-input",
-        initial="0.05",
-    )
     select_units = SelectInput(display_text='Select Units',
                                name='select-units',
                                options=[('English', 'English'), ("Metric", "Metric")],
@@ -259,7 +254,6 @@ def interpolation(request):
         "variable_select": variable_select,
         "output_file_input": output_file_input,
         "raster_extent_select": raster_extent_select,
-        "storage_coefficient": storage_coefficient,
         "select_units": select_units,
         "temporal_interpolation": temporal_interpolation,
         "raster_interval": raster_interval,

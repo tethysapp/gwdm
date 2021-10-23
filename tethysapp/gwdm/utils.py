@@ -991,7 +991,7 @@ def get_wms_datasets(aquifer_name: str, variable_id: str, region_id: str) -> Lis
 
 def get_wms_metadata(
     aquifer_name: str, file_name: str, region_id: str
-) -> Tuple[int, int]:
+) -> Tuple[float, float, dict]:
     """
     Get min and max for selected wms layer
 
@@ -1013,9 +1013,19 @@ def get_wms_metadata(
     ds = xr.open_dataset(file_path)
     # range_min = int(ds.tsvalue.min().values)
     # range_max = int(ds.tsvalue.max().values)
+    drawdown_dict = {}
+    if "volume" in ds:
+        units = ds.volume.units
+        drawdown_dict["units"] = units
+        df = ds.volume.to_dataframe().reset_index()
+        df["volume"] = round(df["volume"], 2)
+        times = (df.time.astype(np.int64) / int(1e6)).tolist()
+        values = df.volume.values.tolist()
+        drawdown_dict["time_series"] = [list(a) for a in zip(times, values)]
+
     range_min = round(float(ds.tsvalue.min().values), 3)
     range_max = round(float(ds.tsvalue.max().values), 3)
-    return range_min, range_max
+    return range_min, range_max, drawdown_dict
 
 
 def get_geoserver_status() -> dict:

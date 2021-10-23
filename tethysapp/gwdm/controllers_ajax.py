@@ -790,10 +790,11 @@ def region_wms_metadata(request):
         aquifer_name = post_info.get("aquifer_name")
         file_name = post_info.get("file_name")
         region_id = post_info.get("region")
-        range_min, range_max = get_wms_metadata(aquifer_name, file_name, region_id)
+        range_min, range_max, drawdown = get_wms_metadata(aquifer_name, file_name, region_id)
         response["success"] = "success"
         response["range_min"] = range_min
         response["range_max"] = range_max
+        response["drawdown"] = drawdown
 
     return JsonResponse(response)
 

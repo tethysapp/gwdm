@@ -498,10 +498,10 @@ def calculate_aquifer_area(imputed_raster, units):
         #     (pi/180) * R^2 * |lon1-lon2| * |sin(lat1)-sin(lat2)|
         radius = earth_radius(imputed_raster['lat'].values[y])
         if units == "English":
-            area_factor = 3.28084
+            area_factor = 1/4046.8564224
         else:
             area_factor = 1
-        area += ((radius * area_factor) ** 2
+        area += (radius ** 2 * area_factor
                  * math.radians(x_res * x_count)
                  * abs((math.sin(cur_lat_min) - math.sin(cur_lat_max))))
 
@@ -527,6 +527,10 @@ def clip_nc_file(file_path, aquifer_obj, region_id, storage_coefficient, units):
         aquifer_gdf.geometry.apply(mapping), crs=4326, drop=True
     )
     area = calculate_aquifer_area(clipped_nc, units)
+    if units == "English":
+        vol_unit = "Acre Feet"
+    else:
+        vol_unit = "Cubic Meters"
     # Calculate total drawdown volume at each time step
     drawdown_grid = np.zeros((clipped_nc.time.size, clipped_nc.lon.size, clipped_nc.lat.size))
     drawdown_volume = np.zeros(clipped_nc.time.size)
@@ -537,7 +541,7 @@ def clip_nc_file(file_path, aquifer_obj, region_id, storage_coefficient, units):
         drawdown_volume[t] = np.nanmean(drawdown_grid[t, :, :] * storage_coefficient * area)
 
     clipped_nc["drawdown"] = (["time", "lon", "lat"], drawdown_grid)
-    clipped_nc["volume"] = (["time"], drawdown_volume)
+    clipped_nc["volume"] = (["time"], drawdown_volume, {"units": vol_unit})
     clipped_nc.to_netcdf(output_file)
     shutil.rmtree(temp_dir)
 
@@ -558,6 +562,7 @@ def mlr_interpolation(mlr_dict):
     start_date = mlr_dict["start_date"]
     end_date = mlr_dict["end_date"]
     storage_coefficient = mlr_dict["storage_coefficient"]
+    units = mlr_dict["units"]
 
     bbox, wells_query_df, measurements_df, aquifer_obj = extract_query_objects(
         region_id, aquifer_id, variable
@@ -672,7 +677,7 @@ def process_interpolation(info_dict):
                 "spacing": spacing,
                 "start_date": start_date,
                 "end_date": end_date,
-                "storage_coefficient": info_dict["storage_coefficient"],
+                "storage_coefficient": float(info_dict["porosity"]),
                 "units": info_dict["units"]
             }
             print(mlr_dict)

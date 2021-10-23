@@ -55,6 +55,7 @@ var LIBRARY_OBJECT = (function() {
         get_well_obs,
         get_wms_datasets,
         get_wms_metadata,
+        generate_drawdown_chart,
         init_all,
         init_events,
         init_jquery_vars,
@@ -313,6 +314,7 @@ var LIBRARY_OBJECT = (function() {
     };
 
     view_region = function(region_id, callback){
+        $(".drawdown").addClass("hidden");
         var defaultParameters = {
             service : 'WFS',
             version : '2.0.0',
@@ -396,6 +398,8 @@ var LIBRARY_OBJECT = (function() {
     };
 
     view_aquifer = function(aquifer_id){
+        $(".drawdown").addClass("hidden");
+
         var defaultParameters = {
             service : 'WFS',
             version : '2.0.0',
@@ -538,6 +542,52 @@ var LIBRARY_OBJECT = (function() {
         set_outlier();
     });
 
+    generate_drawdown_chart = function(result){
+        let wms_endpoint = $("#select-interpolation option:selected").text();
+        let variable_name = $("#variable-select option:selected").text();
+        Highcharts.stockChart('plotter',{
+            chart:{
+                type: 'spline'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true
+                    },
+                    marker: {
+                        enabled: true,
+                        radius: 3
+                    }
+                }
+            },
+            title: {
+                text: wms_endpoint +" "+ variable_name + " Drawdown Volume",
+                style: {
+                    fontSize: '14px'
+                }
+            },
+            xAxis: {
+                title: {
+                    text: result['units']
+                }
+            },
+            yAxis: {
+                title: {
+                    text: "Drawdown Volume"
+                }
+
+            },
+            exporting: {
+                enabled: true
+            },
+            series: [{
+                data:result['time_series'],
+                name: "Drawdown"
+            }]
+
+        });
+    };
+
     generate_chart = function(result){
         var variable_name = $("#variable-select option:selected").text();
         Highcharts.stockChart('chart',{
@@ -644,9 +694,14 @@ var LIBRARY_OBJECT = (function() {
             if("success" in return_data) {
                 var range_min = return_data['range_min'];
                 var range_max = return_data['range_max'];
+                var drawdown_dict = return_data['drawdown']
                 $("#leg_min").val(range_min);
                 $("#leg_max").val(range_max);
                 add_wms(wms_endpoint, range_min, range_max, 'rainbow');
+                if("units" in drawdown_dict){
+                    $(".drawdown").removeClass("hidden");
+                }
+                generate_drawdown_chart(drawdown_dict);
             }
         })
     };
@@ -770,8 +825,10 @@ var LIBRARY_OBJECT = (function() {
                     $("#select-interpolation").html('');
                     $("#aquifer-select").val(null).trigger('change.select2');
                     $("#variable-select").val(null).trigger('change.select2');
+                    $("#select-interpolation").val(null).trigger('change.select2');
                     $("#variable-select").select2({'multiple': false,  placeholder: "Select a Variable"});
                     $("#aquifer-select").select2({'multiple': false,  placeholder: "Select an Aquifer"});
+                    $("#select-interpolation").select2({'multiple': false, placeholder: "Select a Layer"});
                     var empty_opt = '<option value="" selected disabled>Select item...</option>';
                     var var_empty_opt = '<option value="" selected disabled>Select item...</option>';
 
@@ -816,6 +873,8 @@ var LIBRARY_OBJECT = (function() {
         });
 
         $("#variable-select").change(function(){
+            $(".drawdown").addClass("hidden");
+
             var aquifer_id = $("#aquifer-select option:selected").val();
             var aquifer_name = $("#aquifer-select option:selected").text();
             var variable_id = $("#variable-select option:selected").val();
