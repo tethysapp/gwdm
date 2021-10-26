@@ -147,16 +147,13 @@ def interpolation(request):
     dates = [(i, i) for i in range(1948, 2021)]
     output_file_input = TextInput(
         display_text="Output Filename. Unique Identifier to differentiate from different interpolation runs.",
-        name="output-file-input"
+        name="output-file-input",
     )
     raster_extent_select = SelectInput(
         display_text="Raster Extent",
         name="select-raster-extent",
         multiple=False,
-        options=[
-            ("Aquifer Extent", "aquifer"),
-            ("Well Data Extent", "wells")
-        ]
+        options=[("Aquifer Extent", "aquifer"), ("Well Data Extent", "wells")],
     )
     temporal_interpolation = SelectInput(
         display_text="Temporal Interpolation Method",
@@ -178,7 +175,7 @@ def interpolation(request):
             ("3 years", 36),
             ("4 years", 48),
             ("5 years", 60),
-        ]
+        ],
     )
     min_samples = SelectInput(
         display_text="Minimum Water Level Samples per Well",
@@ -195,22 +192,25 @@ def interpolation(request):
         ],
         initial="10 Samples",
     )
-    start_date = SelectInput(display_text='Interpolation Start Date',
-                             name='start-date',
-                             multiple=False,
-                             options=dates,
-                             initial=1970
-                             )
-    end_date = SelectInput(display_text='Interpolation End Date',
-                           name='end-date',
-                           multiple=False,
-                           options=dates,
-                           initial=1980
-                           )
-    select_porosity = TextInput(display_text='Enter the storage coefficient for the aquifer:',
-                                name='select-porosity',
-                                initial='0.05',
-                                )
+    start_date = SelectInput(
+        display_text="Interpolation Start Date",
+        name="start-date",
+        multiple=False,
+        options=dates,
+        initial=1970,
+    )
+    end_date = SelectInput(
+        display_text="Interpolation End Date",
+        name="end-date",
+        multiple=False,
+        options=dates,
+        initial=1980,
+    )
+    select_porosity = TextInput(
+        display_text="Enter the storage coefficient for the aquifer:",
+        name="select-porosity",
+        initial="0.05",
+    )
 
     gap_size = TextInput(
         display_text="Enter GAP Size",
@@ -230,11 +230,16 @@ def interpolation(request):
         initial="1MS",
     )
 
-    select_units = SelectInput(display_text='Select Units',
-                               name='select-units',
-                               options=[('English', 'English'), ("Metric", "Metric")],
-                               initial='English',
-                               )
+    select_units = SelectInput(
+        display_text="Select Drawdown Volume Units",
+        name="select-units",
+        options=[
+            ("Acre-Ft", "acre-ft"),
+            ("Metric(m^3)", "m^3"),
+            ("Cubic-Ft", "cubic-ft"),
+        ],
+        initial="English",
+    )
     # 'gap_size': '365 days',
     # 'pad': '90',
     # 'spacing': '1MS'
@@ -463,20 +468,20 @@ def upload_rasters(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
     variable_select = get_variable_select()
-    add_button = Button(
-        display_text="Add Rasters",
+
+    attributes_button = Button(
+        display_text="Get Attributes",
         icon="glyphicon glyphicon-plus",
-        style="success",
-        name="submit-upload-rasters",
-        attributes={"id": "submit-upload-rasters"},
-        classes="delete",
+        style="primary",
+        name="submit-get-attributes",
+        attributes={"id": "submit-get-attributes"},
     )
 
     context = {
         "region_select": region_select,
         "aquifer_select": aquifer_select,
         "variable_select": variable_select,
-        "add_button": add_button,
+        "attributes_button": attributes_button
     }
     return render(request, "gwdm/upload_rasters.html", context)
 

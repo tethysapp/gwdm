@@ -15,15 +15,64 @@
 
 <div class="form-group shp_upload">
     <label class="control-label" for="shp-upload-input">NetCDF file:</label>
-    <input id="shp-upload-input" name="shp-upload-input" type="file" accept=".nc" multiple>
+    <input id="shp-upload-input" name="shp-upload-input" type="file" accept=".nc, .nc4" multiple>
 </div>
 
-{% gizmo add_button %}
+{% gizmo attributes_button %}
 
+<div type="button" data-toggle="modal" class="btn btn-primary" data-target="#wells-modal">
+    Raster Wizard
+</div>
 {% endblock %}
 
-{% block after_app_content %}
 
+{% block after_app_content %}
+<!-- Update Modal -->
+<form class="modal fade" id="wells-modal" tabindex="-1" role="dialog" aria-labelledby="wells-modal-label">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h5 class="modal-title" id="update-modal-label">Raster Wizard</h5>
+            </div>
+            <div class="modal-body" >
+                <div class="attributes hidden">
+                    <label for="lat_attributes">
+                        Select Lat Variable
+                    </label>
+                    <select  class="lat_attributes" name="lat_attributes" id="lat_attributes" style="width: 100%">
+                    </select>
+                </div>
+                <div class="attributes hidden">
+                    <label for="lon_attributes">
+                        Select Lon Variable
+                    </label>
+                    <select  class="lon_attributes" name="lon_attributes" id="lon_attributes" style="width: 100%">
+                    </select>
+                </div>
+                <div class="attributes hidden">
+                    <label for="time_attributes">
+                        Select Time Variable
+                    </label>
+                    <select  class="time_attributes" name="time_attributes" id="time_attributes" style="width: 100%">
+                    </select>
+                </div>
+                <div class="attributes hidden">
+                    <label for="display_attributes">
+                        Select Display Variable
+                    </label>
+                    <select  class="display_attributes" name="display_attributes" id="display_attributes" style="width: 100%">
+                    </select>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success submit-add-rasters" data-dismiss="modal">Add Rasters</button>
+            </div>
+        </div>
+    </div>
+</form>
 {% endblock %}
 
 

@@ -106,13 +106,13 @@ def interp_well(wells_df, gap_size, pad, spacing):
         end_meas_date = temp_df.index[-1]  # date of last measured point
 
         mask1 = (
-                interp_df.index < beg_meas_date
+            interp_df.index < beg_meas_date
         )  # locations of data before 1st measured point
 
         interp_df[mask1] = np.nan  # blank out data before 1st measured point
 
         mask2 = (
-                interp_df.index >= end_meas_date
+            interp_df.index >= end_meas_date
         )  # locations of data after the last measured point
 
         interp_df[mask2] = np.nan  # blank data from last measured point
@@ -180,18 +180,31 @@ def get_pdsi_df(aquifer_obj):
     data_dir = app.get_custom_setting("gw_data_directory")
     nc_file = os.path.join(data_dir, "pdsi.nc4")
     pdsi_ds = xarray.open_dataset(nc_file, decode_times=False)
-    units, _, reference_date = pdsi_ds.time.attrs['units'].split('since')
-    pdsi_ds['time'] = pd.date_range(start=reference_date, periods=pdsi_ds.sizes['time'], freq='MS')
-    ds = pdsi_ds['pdsi_filled'].to_dataset()
-    ds['pdsi_filled'] = ds['pdsi_filled'].rio.write_crs("epsg:4326")
+    units, _, reference_date = pdsi_ds.time.attrs["units"].split("since")
+    pdsi_ds["time"] = pd.date_range(
+        start=reference_date, periods=pdsi_ds.sizes["time"], freq="MS"
+    )
+    ds = pdsi_ds["pdsi_filled"].to_dataset()
+    ds["pdsi_filled"] = ds["pdsi_filled"].rio.write_crs("epsg:4326")
     ds.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=True)
     aquifer_geom = wkt.loads(aquifer_obj[0])
-    aquifer_gdf = gpd.GeoDataFrame({"name": ["random"], "geometry": [aquifer_geom]}, crs="EPSG:4326")
-    clipped_ds = (ds.rio.clip(aquifer_gdf.geometry.apply(mapping),
-                              aquifer_gdf.crs, drop=True, all_touched=True).drop('spatial_ref'))
-    filled_df = (clipped_ds.to_dataframe()
-                 .reset_index().groupby("time")["pdsi_filled"]
-                 .mean().reset_index().set_index('time'))
+    aquifer_gdf = gpd.GeoDataFrame(
+        {"name": ["random"], "geometry": [aquifer_geom]}, crs="EPSG:4326"
+    )
+    clipped_ds = ds.rio.clip(
+        aquifer_gdf.geometry.apply(mapping),
+        aquifer_gdf.crs,
+        drop=True,
+        all_touched=True,
+    ).drop("spatial_ref")
+    filled_df = (
+        clipped_ds.to_dataframe()
+        .reset_index()
+        .groupby("time")["pdsi_filled"]
+        .mean()
+        .reset_index()
+        .set_index("time")
+    )
     return filled_df
 
 
@@ -228,7 +241,7 @@ def sat_rolling_window(years, gldas_df):
 
 def norm_training_data(in_df, ref_df):
     norm_in_df = (in_df - ref_df.min().values) / (
-            ref_df.max().values - ref_df.min().values
+        ref_df.max().values - ref_df.min().values
     )  # use values as df sometimes goofs
     return norm_in_df
 
@@ -293,8 +306,8 @@ def impute_data(comb_df, well_names, names):
 def renorm_data(in_df, ref_df):
     assert in_df.shape[1] == ref_df.shape[1], "must have same # of columns"
     renorm_df = (
-                        in_df * (ref_df.max().values - ref_df.min().values)
-                ) + ref_df.min().values
+        in_df * (ref_df.max().values - ref_df.min().values)
+    ) + ref_df.min().values
     return renorm_df
 
 
@@ -308,9 +321,7 @@ def create_grid_coords(x_c, y_c, x_steps, bbox, raster_extent):
         min_x, max_x = min(x_c), max(x_c)
         min_y, max_y = min(y_c), max(y_c)
 
-    n_bin = np.absolute(
-        (max_x - min_x) / x_steps
-    )  # determine step size (positive)
+    n_bin = np.absolute((max_x - min_x) / x_steps)  # determine step size (positive)
     # make grid 10 bin steps bigger than date, will give 110 steps in x-direction
     grid_x = np.arange(
         min_x - 5 * n_bin, max_x + 5 * n_bin, n_bin
@@ -352,7 +363,7 @@ def fit_model_var(x_c, y_c, values, bbox, raster_extent):
     x_delta = max_x - min_x  # distance across x coords
     y_delta = max_y - min_y  # distance across y coords
     max_dist = (
-            np.sqrt(np.square(x_delta + y_delta)) / 4
+        np.sqrt(np.square(x_delta + y_delta)) / 4
     )  # assume correlated over 1/4 of distance
     data_var = np.var(values)
     data_std = np.std(values)
@@ -364,8 +375,8 @@ def extract_query_objects(region_id, aquifer_id, variable):
     session = get_session_obj()
     aquifer_obj = (
         session.query(gf2.ST_AsText(Aquifer.geometry), Aquifer.aquifer_name)
-            .filter(Aquifer.region_id == region_id, Aquifer.id == aquifer_id)
-            .first()
+        .filter(Aquifer.region_id == region_id, Aquifer.id == aquifer_id)
+        .first()
     )
     bbox = wkt.loads(aquifer_obj[0]).bounds
     wells_query = session.query(Well).filter(Well.aquifer_id == aquifer_id)
@@ -418,16 +429,13 @@ def earth_radius(lat):
 
     # radius equation
     # see equation 3-107 in WGS84
-    r = (
-            (a * (1 - e2) ** 0.5)
-            / (1 - (e2 * np.cos(lat_gc) ** 2)) ** 0.5
-    )
+    r = (a * (1 - e2) ** 0.5) / (1 - (e2 * np.cos(lat_gc) ** 2)) ** 0.5
 
     return r
 
 
 def generate_nc_file(
-        file_name, grid_x, grid_y, years_df, x_coords, y_coords, bbox, raster_extent
+    file_name, grid_x, grid_y, years_df, x_coords, y_coords, bbox, raster_extent
 ):
     temp_dir = tempfile.mkdtemp()
     file_path = os.path.join(temp_dir, file_name)
@@ -479,16 +487,19 @@ def generate_nc_file(
 
 
 def calculate_aquifer_area(imputed_raster, units):
-    y_res = abs(round(imputed_raster['lat'].values[0] - imputed_raster['lat'].values[1],
-                     7))  # this assumes all cells will be the same
+    y_res = abs(
+        round(imputed_raster["lat"].values[0] - imputed_raster["lat"].values[1], 7)
+    )  # this assumes all cells will be the same
     # size in one dimension (all cells will have same x-component)
-    x_res = abs(round(imputed_raster['lon'].values[0] - imputed_raster['lon'].values[1], 7))
+    x_res = abs(
+        round(imputed_raster["lon"].values[0] - imputed_raster["lon"].values[1], 7)
+    )
     area = 0
     # Loop through each y row
     for y in range(imputed_raster.lat.size):
         # Define the upper and lower bounds of the row
-        cur_lat_max = math.radians(imputed_raster['lat'].values[y] + (y_res / 2))
-        cur_lat_min = math.radians(imputed_raster['lat'].values[y] - (y_res / 2))
+        cur_lat_max = math.radians(imputed_raster["lat"].values[y] + (y_res / 2))
+        cur_lat_min = math.radians(imputed_raster["lat"].values[y] - (y_res / 2))
 
         # Count how many cells in each row are in aquifer (i.e. and, therefore, not nan)
         x_count = np.count_nonzero(~np.isnan(imputed_raster.tsvalue[0, :, y]))
@@ -496,14 +507,19 @@ def calculate_aquifer_area(imputed_raster, units):
         # Area calculated based on the equation found here:
         # https://www.pmel.noaa.gov/maillists/tmap/ferret_users/fu_2004/msg00023.html
         #     (pi/180) * R^2 * |lon1-lon2| * |sin(lat1)-sin(lat2)|
-        radius = earth_radius(imputed_raster['lat'].values[y])
-        if units == "English":
-            area_factor = 1/4046.8564224
+        radius = earth_radius(imputed_raster["lat"].values[y])
+        if units == "acre-ft":
+            area_factor = 1 / 4046.8564224
+        elif units == "cubic-ft":
+            area_factor = 10.764
         else:
             area_factor = 1
-        area += (radius ** 2 * area_factor
-                 * math.radians(x_res * x_count)
-                 * abs((math.sin(cur_lat_min) - math.sin(cur_lat_max))))
+        area += (
+            radius ** 2
+            * area_factor
+            * math.radians(x_res * x_count)
+            * abs((math.sin(cur_lat_min) - math.sin(cur_lat_max)))
+        )
 
     return area
 
@@ -527,18 +543,26 @@ def clip_nc_file(file_path, aquifer_obj, region_id, storage_coefficient, units):
         aquifer_gdf.geometry.apply(mapping), crs=4326, drop=True
     )
     area = calculate_aquifer_area(clipped_nc, units)
-    if units == "English":
+    if units == "acre-ft":
         vol_unit = "Acre Feet"
+    elif units == "cubic-ft":
+        vol_unit = "Cubic Feet"
     else:
         vol_unit = "Cubic Meters"
     # Calculate total drawdown volume at each time step
-    drawdown_grid = np.zeros((clipped_nc.time.size, clipped_nc.lon.size, clipped_nc.lat.size))
+    drawdown_grid = np.zeros(
+        (clipped_nc.time.size, clipped_nc.lon.size, clipped_nc.lat.size)
+    )
     drawdown_volume = np.zeros(clipped_nc.time.size)
     for t in range(clipped_nc.time.size):
         # Calculate drawdown at time t by subtracting original WTE at time 0
-        drawdown_grid[t, :, :] = clipped_nc['tsvalue'][t, :, :] - clipped_nc['tsvalue'][0, :, :]
+        drawdown_grid[t, :, :] = (
+            clipped_nc["tsvalue"][t, :, :] - clipped_nc["tsvalue"][0, :, :]
+        )
         # Average drawdown across entire aquifer x storage_coefficient x area of aquifer
-        drawdown_volume[t] = np.nanmean(drawdown_grid[t, :, :] * storage_coefficient * area)
+        drawdown_volume[t] = np.nanmean(
+            drawdown_grid[t, :, :] * storage_coefficient * area
+        )
 
     clipped_nc["drawdown"] = (["time", "lon", "lat"], drawdown_grid)
     clipped_nc["volume"] = (["time"], drawdown_volume, {"units": vol_unit})
@@ -621,11 +645,14 @@ def mlr_interpolation(mlr_dict):
     grid_x, grid_y = create_grid_coords(
         x_coords, y_coords, x_steps, bbox, raster_extent
     )  # coordinates for x and y axis - not full grid
-    imputed_df = imputed_df[(imputed_df.index >= f"01-01-{start_date+1}") & (imputed_df.index <= f"12-31-{end_date+1}")]
+    imputed_df = imputed_df[
+        (imputed_df.index >= f"01-01-{start_date+1}")
+        & (imputed_df.index <= f"12-31-{end_date+1}")
+    ]
     # skip_month = 48  # take data every nth month (skip_months), e.g., 60 = every 5 years
     years_df = imputed_df.iloc[
-               ::raster_interval
-               ].T  # extract every nth month of data and transpose array
+        ::raster_interval
+    ].T  # extract every nth month of data and transpose array
     aquifer_name = aquifer_obj[1].replace(" ", "_")
     file_name = f"{aquifer_name}_{variable}_{file_output}_{time.time()}.nc"
     # setup a netcdf file to store the time series of rasters
@@ -633,7 +660,9 @@ def mlr_interpolation(mlr_dict):
     nc_file_path = generate_nc_file(
         file_name, grid_x, grid_y, years_df, x_coords, y_coords, bbox, raster_extent
     )
-    final_nc_path = clip_nc_file(nc_file_path, aquifer_obj, region_id, storage_coefficient, units)
+    final_nc_path = clip_nc_file(
+        nc_file_path, aquifer_obj, region_id, storage_coefficient, units
+    )
     return final_nc_path
 
 
@@ -644,8 +673,8 @@ def process_interpolation(info_dict):
 
     temporal_interpolation = info_dict["temporal_interpolation"]
     min_samples = int(info_dict["min_samples"])
-    start_date = int(info_dict['start_date'])
-    end_date = int(info_dict['end_date'])
+    start_date = int(info_dict["start_date"])
+    end_date = int(info_dict["end_date"])
 
     region_id = int(info_dict["region"])
     aquifer_id = info_dict["aquifer"]
@@ -678,7 +707,7 @@ def process_interpolation(info_dict):
                 "start_date": start_date,
                 "end_date": end_date,
                 "storage_coefficient": float(info_dict["porosity"]),
-                "units": info_dict["units"]
+                "units": info_dict["units"],
             }
             print(mlr_dict)
             try:

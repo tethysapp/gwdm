@@ -35,7 +35,7 @@ from .utils import (
     get_region_variables_list,
     process_nc_files,
     process_wells_file,
-    process_measurements_file,
+    process_measurements_file, process_raster_attributes,
 )
 
 
@@ -340,6 +340,31 @@ def get_measurements_attributes(request, app_workspace):
             return JsonResponse(json_obj)
 
 
+@user_passes_test(user_permission_test)
+@app_workspace
+def get_raster_attributes(request, workspace):
+    """
+    Ajax controller to get attributes for add measurements page
+    """
+    if request.is_ajax() and request.method == "POST":
+
+        try:
+
+            raster = request.FILES.getlist("raster")
+
+            attributes = process_raster_attributes(raster, workspace)
+
+            response = {"success": "success",
+                        "attributes": attributes}
+
+            return JsonResponse(response)
+
+        except Exception as e:
+            json_obj = {"error": json.dumps(e)}
+
+            return JsonResponse(json_obj)
+
+
 # @user_passes_test(user_permission_test)
 def get_aquifers(request):
     """
@@ -555,7 +580,14 @@ def rasters_upload(request):
         variable = info.get("variable")
         region = int(info.get("region"))
         aquifer = info.get("aquifer")
-        response = process_nc_files(region, aquifer, variable, file)
+        lat = info.get("lat")
+        lon = info.get("lon")
+        time_var = info.get("time_var")
+        display_var = info.get("display_var")
+        rename_dict = {lat: "lat", lon: "lon",
+                       time_var: "time", display_var: "tsvalue"}
+        response = process_nc_files(region, aquifer, variable, file,
+                                    rename_dict)
 
         return JsonResponse(response)
 
@@ -790,7 +822,9 @@ def region_wms_metadata(request):
         aquifer_name = post_info.get("aquifer_name")
         file_name = post_info.get("file_name")
         region_id = post_info.get("region")
-        range_min, range_max, drawdown = get_wms_metadata(aquifer_name, file_name, region_id)
+        range_min, range_max, drawdown = get_wms_metadata(
+            aquifer_name, file_name, region_id
+        )
         response["success"] = "success"
         response["range_min"] = range_min
         response["range_max"] = range_max

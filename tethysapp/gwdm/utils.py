@@ -525,6 +525,62 @@ def get_shapefile_gdf(
     return gdf, temp_dir
 
 
+def get_nc_attrs(raster, app_workspace):
+    from collections import Counter
+    temp_id = uuid.uuid4()
+    temp_dir = os.path.join(app_workspace.path, str(temp_id))
+    os.makedirs(temp_dir)
+
+    coords = []
+    keys = []
+
+    for f in raster:
+        f_name = f.name
+        f_path = os.path.join(temp_dir, f_name)
+
+        with open(f_path, "wb") as f_local:
+            f_local.write(f.read())
+
+    for file in os.listdir(temp_dir):
+        f_path = os.path.join(temp_dir, file)
+        ds = xr.open_dataset(f_path)
+        coords.append(list(ds.coords))
+        keys.append(list(ds.keys()))
+    coords_counter = Counter(tuple(item) for item in coords)
+    attrs_dict = {}
+    if len(coords_counter.values()) == 1:
+        final_coords = coords[0]
+        final_keys = keys[0]
+        attrs_dict["coords"] = final_coords
+        attrs_dict["keys"] = final_keys
+    else:
+        attrs_dict["error"] = "Files have different variables. " \
+                              "Please make sure that they have the same variables and try again."
+    return attrs_dict, temp_dir
+
+
+def process_raster_attributes(
+        raster: Any, app_workspace: Any
+) -> Any:
+    temp_dir = None
+    try:
+
+        attrs_dict, temp_dir = get_nc_attrs(raster, app_workspace)
+
+        return attrs_dict
+
+    except Exception as e:
+        if temp_dir is not None:
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+        return {"error": str(e)}
+    finally:
+        # Delete the temporary directory once the shapefile is processed
+        if temp_dir is not None:
+            if os.path.exists(temp_dir):
+                shutil.rmtree(temp_dir)
+
+
 def get_shapefile_attributes(
     shapefile: Any, app_workspace: Any, polygons: bool = True
 ) -> Any:
@@ -1170,7 +1226,8 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
     return response
 
 
-def process_nc_files(region: int, aquifer: str, variable: str, file: Any) -> Dict:
+def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
+                     rename_dict: Dict) -> Dict:
     """
     Upload NetCDF files to the Thredds Directory
 
@@ -1179,6 +1236,7 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any) -> Dic
         aquifer: Aquifer Name as listed in the Database
         variable: Variable ID as listed in the Database
         file: File(s) to upload
+        rename_dict: Dict with rename mapping
 
     Returns:
         JSON Response indicating if the files were uploaded
@@ -1198,6 +1256,10 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any) -> Dic
             f_path = os.path.join(aquifer_dir, f_name)
             with open(f_path, "wb") as f_local:
                 f_local.write(f.read())
+            ds = xr.open_dataset(f_path)
+            ds = ds.rename(rename_dict)
+            ds = ds["tsvalue"].to_dataset()
+            ds.to_netcdf(f_path)
         response["success"] = "success"
     except Exception as e:
         response["error"] = str(e)

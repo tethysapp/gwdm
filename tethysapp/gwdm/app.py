@@ -334,9 +334,14 @@ class Gwdm(TethysAppBase):
                 controller="gwdm.controllers_ajax.get_aquifers",
             ),
             UrlMap(
+                name="upload-rasters-metadata",
+                url="gwdm/upload-rasters/get-aquifers",
+                controller="gwdm.controllers_ajax.get_aquifers",
+            ),
+            UrlMap(
                 name="upload-rasters-ajax",
-                url="gwdm/upload-rasters/submit",
-                controller="gwdm.controllers_ajax.rasters_upload",
+                url="gwdm/upload-rasters/get-attributes",
+                controller="gwdm.controllers_ajax.get_raster_attributes",
             ),
         )
 
