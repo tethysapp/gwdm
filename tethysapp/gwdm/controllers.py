@@ -235,7 +235,7 @@ def interpolation(request):
         name="select-units",
         options=[
             ("Acre-Ft", "acre-ft"),
-            ("Metric(m^3)", "m^3"),
+            ("Metric (m^3)", "m^3"),
             ("Cubic-Ft", "cubic-ft"),
         ],
         initial="English",

@@ -1256,10 +1256,14 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
             f_path = os.path.join(aquifer_dir, f_name)
             with open(f_path, "wb") as f_local:
                 f_local.write(f.read())
+                print("file saved")
+            new_f_name = f"{aquifer}_{variable}_{time.time()}.nc"
+            new_path = os.path.join(aquifer_dir, new_f_name)
             ds = xr.open_dataset(f_path)
             ds = ds.rename(rename_dict)
             ds = ds["tsvalue"].to_dataset()
-            ds.to_netcdf(f_path)
+            ds.to_netcdf(new_path)
+            os.remove(f_path)
         response["success"] = "success"
     except Exception as e:
         response["error"] = str(e)

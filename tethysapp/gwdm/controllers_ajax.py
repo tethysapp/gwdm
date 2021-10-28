@@ -575,21 +575,24 @@ def rasters_upload(request):
     Ajax controller to upload rasters
     """
     if request.is_ajax() and request.method == "POST":
-        info = request.POST
-        file = request.FILES.getlist("ncfiles")
-        variable = info.get("variable")
-        region = int(info.get("region"))
-        aquifer = info.get("aquifer")
-        lat = info.get("lat")
-        lon = info.get("lon")
-        time_var = info.get("time_var")
-        display_var = info.get("display_var")
-        rename_dict = {lat: "lat", lon: "lon",
-                       time_var: "time", display_var: "tsvalue"}
-        response = process_nc_files(region, aquifer, variable, file,
-                                    rename_dict)
+        try:
+            info = request.POST
+            file = request.FILES.getlist("ncfiles")
+            variable = info.get("variable")
+            region = int(info.get("region"))
+            aquifer = info.get("aquifer")
+            lat = info.get("lat")
+            lon = info.get("lon")
+            time_var = info.get("time_var")
+            display_var = info.get("display_var")
+            rename_dict = {lat: "lat", lon: "lon",
+                           time_var: "time", display_var: "tsvalue"}
+            response = process_nc_files(region, aquifer, variable, file,
+                                        rename_dict)
 
-        return JsonResponse(response)
+            return JsonResponse(response)
+        except Exception as e:
+            return {"error": str(e)}
 
 
 @user_passes_test(user_permission_test)

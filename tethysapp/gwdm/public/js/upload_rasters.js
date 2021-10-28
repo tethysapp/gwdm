@@ -191,7 +191,6 @@ var LIBRARY_OBJECT = (function() {
         var submit_button = $("#submit-add-rasters");
         var submit_button_html = submit_button.html();
         submit_button.text('Uploading Rasters ...');
-        console.log(data);
         var xhr = ajax_update_database_with_file("submit", data); //Submitting the data through the ajax function, see main.js for the helper function.
         xhr.done(function(return_data){ //Reset the form once the data is added successfully
             if("success" in return_data){
@@ -206,7 +205,7 @@ var LIBRARY_OBJECT = (function() {
 
     };
 
-    $("#submit-add-rasters").click(upload_rasters);
+    $(".submit-add-rasters").click(upload_rasters);
 
     init_all = function(){
         init_jquery_vars();
