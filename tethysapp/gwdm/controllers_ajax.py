@@ -583,16 +583,16 @@ def rasters_upload(request):
             aquifer = info.get("aquifer")
             lat = info.get("lat")
             lon = info.get("lon")
+            clip = info.get("clip")
             time_var = info.get("time_var")
             display_var = info.get("display_var")
             rename_dict = {lat: "lat", lon: "lon",
                            time_var: "time", display_var: "tsvalue"}
             response = process_nc_files(region, aquifer, variable, file,
-                                        rename_dict)
-
+                                        clip, rename_dict)
             return JsonResponse(response)
         except Exception as e:
-            return {"error": str(e)}
+            return JsonResponse({"error": str(e)})
 
 
 @user_passes_test(user_permission_test)

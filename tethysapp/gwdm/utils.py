@@ -1,8 +1,8 @@
 import calendar
+import glob
 import json
 import os
 import re
-import glob
 import shutil
 import time
 import uuid
@@ -10,16 +10,19 @@ from datetime import datetime
 from typing import List, Any, Dict, Tuple, Union
 
 import geopandas as gpd
-import pandas as pd
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 import simplejson
 import xarray as xr
+import rioxarray
+from geoalchemy2 import functions as gf2
 from pandarallel import pandarallel
 from shapely import wkt
+from shapely.geometry import mapping
+from siphon.catalog import TDSCatalog
 from sqlalchemy.sql import func
 from tethys_sdk.gizmos import TextInput, SelectInput
-from siphon.catalog import TDSCatalog
 
 from .app import Gwdm as app
 from .model import Region, Aquifer, Well, Measurement, Variable
@@ -1226,8 +1229,23 @@ def delete_bulk_wells(region: str, aquifer: str) -> dict:
     return response
 
 
+def clip_nc_file(region: int, aquifer: str, ds: xr.Dataset):
+    session = get_session_obj()
+    aquifer_obj = (
+        session.query(gf2.ST_AsText(Aquifer.geometry), Aquifer.aquifer_name)
+        .filter(Aquifer.region_id == region, Aquifer.aquifer_name == aquifer)
+        .first()
+    )
+    aquifer_geom = wkt.loads(aquifer_obj[0])
+    gdf = gpd.GeoDataFrame({"name": ["random"], "geometry": [aquifer_geom]}, crs="EPSG:4326")
+    ds.rio.set_spatial_dims(x_dim="lon", y_dim="lat", inplace=True)
+    ds['tsvalue'] = ds['tsvalue'].rio.write_crs("epsg:4326")
+    ds = ds.rio.clip(gdf.geometry.apply(mapping), gdf.crs, drop=True)
+    return ds
+
+
 def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
-                     rename_dict: Dict) -> Dict:
+                     clip: str, rename_dict: Dict) -> Dict:
     """
     Upload NetCDF files to the Thredds Directory
 
@@ -1236,6 +1254,7 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
         aquifer: Aquifer Name as listed in the Database
         variable: Variable ID as listed in the Database
         file: File(s) to upload
+        clip: Boolean string to clip uploaded netcdf files
         rename_dict: Dict with rename mapping
 
     Returns:
@@ -1245,6 +1264,7 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
     try:
         thredds_directory = app.get_custom_setting("gw_thredds_directoy")
         region_dir = os.path.join(thredds_directory, str(region))
+        aquifer_name = aquifer
         aquifer = aquifer.replace(" ", "_")
         if not os.path.exists(region_dir):
             os.makedirs(region_dir)
@@ -1256,12 +1276,13 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
             f_path = os.path.join(aquifer_dir, f_name)
             with open(f_path, "wb") as f_local:
                 f_local.write(f.read())
-                print("file saved")
             new_f_name = f"{aquifer}_{variable}_{time.time()}.nc"
             new_path = os.path.join(aquifer_dir, new_f_name)
             ds = xr.open_dataset(f_path)
             ds = ds.rename(rename_dict)
             ds = ds["tsvalue"].to_dataset()
+            if clip == "True":
+                ds = clip_nc_file(region, aquifer_name, ds)
             ds.to_netcdf(new_path)
             os.remove(f_path)
         response["success"] = "success"

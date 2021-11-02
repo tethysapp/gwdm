@@ -132,12 +132,12 @@ var LIBRARY_OBJECT = (function() {
         var region = $("#region-select option:selected").val();
         var aquifer = $("#aquifer-select option:selected").text();
         var variable = $("#variable-select option:selected").val();
+        var clip = $("#clip-select option:selected").val();
         var ncfiles = $("#shp-upload-input")[0].files;
         var lat = $("#lat_attributes option:selected").val();
         var lon = $("#lon_attributes option:selected").val();
         var time = $("#time_attributes option:selected").val();
         var display = $("#display_attributes option:selected").val();
-        console.log("clicked");
         if(aquifer === ""){
             addErrorMessage("Aquifer cannot be empty! Please select an Aquifer.");
             return false;
@@ -180,6 +180,7 @@ var LIBRARY_OBJECT = (function() {
         data.append("region", region);
         data.append("aquifer", aquifer);
         data.append("variable", variable);
+        data.append("clip", clip);
         data.append("lat", lat);
         data.append("lon", lon);
         data.append("time_var", time);

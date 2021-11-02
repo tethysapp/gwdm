@@ -238,7 +238,7 @@ def interpolation(request):
             ("Metric (m^3)", "m^3"),
             ("Cubic-Ft", "cubic-ft"),
         ],
-        initial="English",
+        initial="Cubic-Ft",
     )
     # 'gap_size': '365 days',
     # 'pad': '90',
@@ -469,6 +469,16 @@ def upload_rasters(request):
     aquifer_select = get_aquifer_select(None)
     variable_select = get_variable_select()
 
+    clip_select = SelectInput(
+        display_text="Clip NetCDF Files? ",
+        name="clip-select",
+        options=[
+            ("True", "True"),
+            ("False", "False"),
+        ],
+        initial="False",
+    )
+
     attributes_button = Button(
         display_text="Get Attributes",
         icon="glyphicon glyphicon-plus",
@@ -481,6 +491,7 @@ def upload_rasters(request):
         "region_select": region_select,
         "aquifer_select": aquifer_select,
         "variable_select": variable_select,
+        "clip_select": clip_select,
         "attributes_button": attributes_button
     }
     return render(request, "gwdm/upload_rasters.html", context)

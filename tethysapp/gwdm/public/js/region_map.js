@@ -561,7 +561,7 @@ var LIBRARY_OBJECT = (function() {
                 }
             },
             title: {
-                text: wms_endpoint +" "+ variable_name + " Drawdown Volume",
+                text: wms_endpoint +" "+ variable_name + " Storage Time Series",
                 style: {
                     fontSize: '14px'
                 }
@@ -573,7 +573,7 @@ var LIBRARY_OBJECT = (function() {
             },
             yAxis: {
                 title: {
-                    text: "Drawdown Volume"
+                    text: "Storage Time Series"
                 }
 
             },
@@ -582,7 +582,7 @@ var LIBRARY_OBJECT = (function() {
             },
             series: [{
                 data:result['time_series'],
-                name: "Drawdown"
+                name: "Storage Time Series"
             }]
 
         });
