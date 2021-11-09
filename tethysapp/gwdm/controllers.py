@@ -161,9 +161,9 @@ def interpolation(request):
         multiple=False,
         options=[
             # ("Pchip Interpolation", "pchip"),
-            ("Multi-Linear Regression", "MLR")
+            ("Extreme Learning Machine", "MLR")
         ],
-        initial="Multi-Linear Regression",
+        initial="Extreme Learning Machine",
     )
     raster_interval = SelectInput(
         display_text="Select Time Interval",

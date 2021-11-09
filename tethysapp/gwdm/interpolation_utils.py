@@ -709,12 +709,12 @@ def process_interpolation(info_dict):
                 "storage_coefficient": float(info_dict["porosity"]),
                 "units": info_dict["units"],
             }
-            print(mlr_dict)
             try:
                 mlr_interpolation(mlr_dict)
                 success_tracker.append("success")
             except Exception as e:
                 print(aquifer_id)
+                print(f"{mlr_dict} {e}")
                 success_tracker.append("error")
                 continue
 
