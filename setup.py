@@ -21,7 +21,7 @@ resource_files += find_resource_files(
 
 setup(
     name=release_package,
-    version="0.0.1",
+    version="0.0.2",
     description="Ground Water Data Mapper",
     long_description="",
     keywords="",
