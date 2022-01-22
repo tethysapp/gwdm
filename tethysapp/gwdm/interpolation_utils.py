@@ -28,9 +28,9 @@ from .app import Gwdm as app
 from .model import Aquifer, Well, Measurement
 from .utils import get_session_obj, get_region_aquifers_list
 
-SERVER1 = "https://www.esrl.noaa.gov/psd/thredds/wms/Datasets/dai_pdsi/pdsi.mon.mean.selfcalibrated.nc"
+SERVER1 = "https://www.psl.noaa.gov/thredds/wms/Datasets/dai_pdsi/pdsi.mon.mean.selfcalibrated.nc"
 LAYER1 = "pdsi"  # name of data column to be returned
-SERVER2 = "https://www.esrl.noaa.gov/psd/thredds/wms/Datasets/cpcsoil/soilw.mon.mean.nc"
+SERVER2 = "https://www.psl.noaa.gov/thredds/wms/Datasets/cpcsoil/soilw.mon.mean.nc"
 LAYER2 = "soilw"  # name of data column to be returned
 YEARS = [1, 3, 5, 10]
 
