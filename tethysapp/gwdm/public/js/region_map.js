@@ -597,7 +597,7 @@ var LIBRARY_OBJECT = (function() {
             plotOptions: {
                 series: {
                     dataLabels: {
-                        enabled: true
+                        enabled: false
                     },
                     marker: {
                         enabled: true,
@@ -629,6 +629,19 @@ var LIBRARY_OBJECT = (function() {
                 data:result['timeseries'],
                 name: variable_name
             }]
+
+        }, function (chart) { // on complete
+            chart.renderer.button('Toggle Labels', 0, 0)
+                .attr({
+                    zIndex: 3
+                })
+                .on('click', function () {
+                    let opt = chart.series[0].options;
+                    opt.dataLabels.enabled = !opt.dataLabels.enabled;
+                    // opt.marker.enabled = !opt.marker.enabled;
+                    chart.series[0].update(opt);
+                })
+                .add();
 
         });
     };
@@ -740,7 +753,7 @@ var LIBRARY_OBJECT = (function() {
             opacity: '1.0',
             colorscalerange: [range_min, range_max],
             version:'1.3.0',
-            zIndex:5
+            zIndex:5,
         });
 
         tdWmsLayer = L.timeDimension.layer.wms(wmsLayer,{

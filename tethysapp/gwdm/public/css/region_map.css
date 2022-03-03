@@ -8,6 +8,9 @@
 /*    width:100%;*/
 /*    position: relative;*/
 /*}*/
+#chart-modal .modal-dialog {
+    width: 75%
+}
 .min_input{
     background: #888888;
     border-radius: 4px;
