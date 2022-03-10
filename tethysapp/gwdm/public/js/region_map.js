@@ -29,6 +29,7 @@ var LIBRARY_OBJECT = (function() {
         min_obs,
         max_obs,
         $modalChart,
+        $tsToggle,
         overlay_maps,
         public_interface,				// Object returned by the module
         region,
@@ -106,6 +107,7 @@ var LIBRARY_OBJECT = (function() {
         $threddsUrl = $("#thredds-text-input").val();
         region = $("#region-text-input").val();
         user_status = $("#user-info").attr('user-status');
+        $tsToggle = false;
     };
 
 
@@ -113,6 +115,7 @@ var LIBRARY_OBJECT = (function() {
         map = L.map('map',{
             zoom: 3,
             center: [0, 0],
+            editable: true
             // crs: L.CRS.EPSG3857
         });
 
@@ -196,6 +199,20 @@ var LIBRARY_OBJECT = (function() {
 
             } else {
                 markers.disableClustering();
+            }
+        });
+
+        $('#ts-toggle').change(function(){
+            if(this.checked){
+                original_map_chart();
+                $tsToggle = true;
+                map.closePopup();
+                // map.editTools.startPolygon();
+                // map.on('editable:drawing:end', (e) => {
+                //     console.log(e);
+                // });
+            } else {
+                $tsToggle = false;
             }
         });
 
@@ -303,6 +320,7 @@ var LIBRARY_OBJECT = (function() {
             }
             layer.bindPopup(popupString);
             layer.on('click', get_ts);
+
         }
     };
 
@@ -491,29 +509,30 @@ var LIBRARY_OBJECT = (function() {
     };
 
     get_ts = function(e){
-        var popup = e.target.getPopup();
-        var content = popup.getContent();
-        var well_id = popup._source.feature.id;
-        var aquifer_id = $("#aquifer-select option:selected").val();
-        var variable_id = $("#variable-select option:selected").val();
-        var data = new FormData();
-        data.append("aquifer_id", aquifer_id);
-        data.append("variable_id", variable_id);
-        data.append("well_id", well_id);
-        $("#well-info").attr("well-id", well_id);
-        var xhr = ajax_update_database_with_file("get-timeseries", data);
-        xhr.done(function(return_data){
-            if("success" in return_data){
-                // $modalChart.modal('show');
-                // reset_form(return_data);
-                resize_map_chart();
-                generate_chart(return_data);
-                // addSuccessMessage("Aquifer Update Successful!");
-            }else if("error" in return_data){
-                // addErrorMessage(return_data["error"]);
-                console.log('err');
-            }
-        });
+        if($tsToggle===false) {
+            var popup = e.target.getPopup();
+            var well_id = popup._source.feature.id;
+            var aquifer_id = $("#aquifer-select option:selected").val();
+            var variable_id = $("#variable-select option:selected").val();
+            var data = new FormData();
+            data.append("aquifer_id", aquifer_id);
+            data.append("variable_id", variable_id);
+            data.append("well_id", well_id);
+            $("#well-info").attr("well-id", well_id);
+            var xhr = ajax_update_database_with_file("get-timeseries", data);
+            xhr.done(function (return_data) {
+                if ("success" in return_data) {
+                    // $modalChart.modal('show');
+                    // reset_form(return_data);
+                    resize_map_chart();
+                    generate_chart(return_data);
+                    // addSuccessMessage("Aquifer Update Successful!");
+                } else if ("error" in return_data) {
+                    // addErrorMessage(return_data["error"]);
+                    console.log('err');
+                }
+            });
+        }
     };
 
     set_outlier = function(){
@@ -552,7 +571,7 @@ var LIBRARY_OBJECT = (function() {
             plotOptions: {
                 series: {
                     dataLabels: {
-                        enabled: true
+                        enabled: false
                     },
                     marker: {
                         enabled: true,
@@ -584,6 +603,19 @@ var LIBRARY_OBJECT = (function() {
                 data:result['time_series'],
                 name: "Storage Time Series"
             }]
+
+        }, function (chart) {
+            chart.renderer.button('Toggle Labels', 0, 0)
+                .attr({
+                    zIndex: 3
+                })
+                .on('click', function () {
+                    let opt = chart.series[0].options;
+                    opt.dataLabels.enabled = !opt.dataLabels.enabled;
+                    // opt.marker.enabled = !opt.marker.enabled;
+                    chart.series[0].update(opt);
+                })
+                .add();
 
         });
     };
