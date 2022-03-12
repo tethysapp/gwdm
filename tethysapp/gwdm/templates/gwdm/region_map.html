@@ -14,6 +14,9 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
       integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
       crossorigin=""/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"
+      integrity="sha512-gc3xjCmIy673V6MyOAZhIW93xhM9ei1I+gLbmFjUHIjocENRsLX/QUE1htk5q1XV2D/iie/VQ8DXI6Vu8bexvQ=="
+      crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link rel="stylesheet" href="https://cdn.rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.control.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.5.0/nouislider.min.css" />
 <link rel="stylesheet" href="{% static 'gwdm/vendor/leaflet/L.Control.Opacity.css' %}" />
@@ -22,12 +25,19 @@
 
 {% block global_scripts %}
 {{block.super}}
+
 <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
         integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
         crossorigin=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"
+        integrity="sha512-ozq8xQKq6urvuU6jNgkfqAmT7jKN2XumbrX1JiB3TnF7tI48DPI4Gy1GXKD/V3EExgAs1V+pRO7vwtS1LHg0Gw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-editable/1.2.0/Leaflet.Editable.min.js"
         integrity="sha512-QpANYNI4879TA/KVcjagBEb/XjOEzSg9Ge7DKWnLHEKaotUL0S0jOaKgxktFxsY7Lo5YTRXRFt/VHpEg4ifd5Q=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"
+        integrity="sha512-Q7HOppxoH0L2M7hreVoFCtUZimR2YaY0fBewIYzkCgmNtgOOZ5IgMNYxHgfps0qrO1ef5m7L1FeHrhXlq1I9HA=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script type="text/javascript" src="https://cdn.rawgit.com/nezasa/iso8601-js-period/master/iso8601.min.js"></script>
 <script type="text/javascript" src="https://cdn.rawgit.com/socib/Leaflet.TimeDimension/master/dist/leaflet.timedimension.min.js"></script>
@@ -66,11 +76,17 @@
     <input type="checkbox" id="cluster-toggle" name="cluster-toggle" data-toggle="toggle" data-on="On" data-off="Off" data-onstyle="success" data-offstyle="danger">
     <label for="cluster-toggle">Cluster Wells</label>
 </div>
-<!--<br>-->
-<!--<div>-->
-<!--    <input type="checkbox" id="ts-toggle" name="ts-toggle" data-toggle="toggle" data-on="On" data-off="Off" data-onstyle="success" data-offstyle="danger">-->
-<!--    <label for="ts-toggle">Multiple Well Select</label>-->
-<!--</div>-->
+<br>
+<div>
+    <input type="checkbox" id="ts-toggle" name="ts-toggle" data-toggle="toggle" data-on="On" data-off="Off" data-onstyle="success" data-offstyle="danger">
+    <label for="ts-toggle">Multiple Well Select</label>
+</div>
+<br>
+<div class="selected_wells hidden">
+    <button type="button" class="btn btn-success" name="multi-vals-btn" id="multi-vals-btn">
+        Get Values From Multi Select
+    </button>
+</div>
 <br>
 <label>
     Filter Wells By Observations

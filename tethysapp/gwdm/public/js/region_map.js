@@ -20,6 +20,9 @@ var LIBRARY_OBJECT = (function() {
         contourLayer,
         contourTimeLayer,
         contourGroup,
+        drawControl,
+        drawGroup,
+        // drawOptions,
         $geoserverUrl,
         geojsonMarkerOptions,
         interpolationGroup,
@@ -57,6 +60,7 @@ var LIBRARY_OBJECT = (function() {
         get_wms_datasets,
         get_wms_metadata,
         generate_drawdown_chart,
+        highlight_layer,
         init_all,
         init_events,
         init_jquery_vars,
@@ -125,6 +129,18 @@ var LIBRARY_OBJECT = (function() {
                 '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
+        let drawOptions = {
+            position: 'topleft',
+            draw:{
+                polyline: false,
+                marker: false,
+                circlemarker: false,
+                circle: false
+            }
+        };
+
+        drawControl = new L.Control.Draw(drawOptions);
+
         wms_legend = L.control({
             position: 'bottomright'
         });
@@ -174,6 +190,7 @@ var LIBRARY_OBJECT = (function() {
 
         regionGroup = L.featureGroup().addTo(map);
         aquiferGroup = L.featureGroup().addTo(map);
+        drawGroup = L.featureGroup().addTo(map);
         interpolationGroup = L.layerGroup().addTo(map);
         contourGroup = L.layerGroup().addTo(map);
 
@@ -207,14 +224,44 @@ var LIBRARY_OBJECT = (function() {
                 original_map_chart();
                 $tsToggle = true;
                 map.closePopup();
+                map.addControl(drawControl);
+                $(".selected_wells").removeClass("hidden");
                 // map.editTools.startPolygon();
                 // map.on('editable:drawing:end', (e) => {
                 //     console.log(e);
                 // });
             } else {
-                $tsToggle = false;
+                $tsToggle = false
+                drawGroup.clearLayers();
+                drawControl.remove();
+                $(".selected_wells").addClass("hidden");
+                $("#variable-select").trigger("change");
             }
         });
+
+        $("#multi-vals-btn").click(function () {
+            let featureDict = {"type": "FeatureCollection"};
+            let features = [];
+            markers.eachLayer(function(mrkr){
+                if(mrkr.options.fillColor === "black"){
+                    features.push(mrkr.feature);
+                }
+            });
+            featureDict["features"] = features;
+            console.log(featureDict);
+        });
+
+        highlight_layer = function(layerID) {
+            let highlight = {
+                radius: 12,
+                fillColor: "black",
+                color: "white",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 1
+            };
+            map._layers[layerID.target._leaflet_id].setStyle(highlight);
+        }
 
         overlay_maps = {
             "Region Boundary": regionGroup,
@@ -229,7 +276,7 @@ var LIBRARY_OBJECT = (function() {
         L.easyButton({
             states: [{
                 stateName: 'region-home',
-                icon: 'glyphicon-home',
+                icon: 'glyphicon-refresh',
                 title: 'Region Home',
                 onClick: function() {
                     // view_region(region, get_region_aquifers);
@@ -532,6 +579,8 @@ var LIBRARY_OBJECT = (function() {
                     console.log('err');
                 }
             });
+        }else{
+            highlight_layer(e);
         }
     };
 
@@ -997,6 +1046,19 @@ var LIBRARY_OBJECT = (function() {
                 onEachFeature: wfs_feature_function,
                 filter: wfs_filter_function
             }).addTo(markers);
+        });
+
+        map.on('draw:created', (e) => {
+            drawGroup.clearLayers();
+            let drawnLayer = e.layer;
+            drawGroup.addLayer(drawnLayer);
+            let polygonGeoJson = e.layer.toGeoJSON();
+            let ptsWithin = turf.within(markers.toGeoJSON(), polygonGeoJson);
+            console.log(ptsWithin);
+        });
+
+        map.on('draw:drawstart', (e) => {
+            drawGroup.clearLayers();
         });
 
     });
