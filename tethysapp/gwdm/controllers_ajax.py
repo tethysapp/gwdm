@@ -25,6 +25,7 @@ from .utils import (
     user_permission_test,
     process_region_shapefile,
     process_aquifer_shapefile,
+    get_batch_ts,
     get_shapefile_attributes,
     get_timeseries,
     get_well_obs,
@@ -35,7 +36,8 @@ from .utils import (
     get_region_variables_list,
     process_nc_files,
     process_wells_file,
-    process_measurements_file, process_raster_attributes,
+    process_measurements_file,
+    process_raster_attributes,
 )
 
 
@@ -72,8 +74,8 @@ def region_tabulator(request):
     data_dict = []
 
     regions = session.query(Region).order_by(Region.id)[
-        (page * size) : ((page + 1) * size)
-    ]
+              (page * size) : ((page + 1) * size)
+              ]
 
     for region in regions:
         json_dict = {"id": region.id, "region_name": region.region_name}
@@ -186,8 +188,8 @@ def aquifer_tabulator(request):
     data_dict = []
 
     aquifers = session.query(Aquifer).order_by(Aquifer.id)[
-        (page * size) : ((page + 1) * size)
-    ]
+               (page * size) : ((page + 1) * size)
+               ]
 
     for aquifer in aquifers:
         json_dict = {
@@ -461,8 +463,8 @@ def wells_tabulator(request):
 
     wells = (
         session.query(Well)
-        .filter(Well.aquifer_id == aquifer_id)
-        .order_by(Well.id)[(page * size) : ((page + 1) * size)]
+            .filter(Well.aquifer_id == aquifer_id)
+            .order_by(Well.id)[(page * size) : ((page + 1) * size)]
     )
 
     for well in wells:
@@ -628,6 +630,21 @@ def region_timeseries(request):
         return JsonResponse(response)
 
 
+def region_multiple_timeseries(request):
+    """
+    Ajax controller to get timeseries for a selected region, multiple wells, variable
+    """
+    response = {}
+    if request.is_ajax() and request.method == "POST":
+        info = request.POST
+        variable_id = int(info.get("variable_id"))
+        wells_features = info.get("wells_dict")
+        ts_list = get_batch_ts(variable_id, wells_features)
+        response["ts_list"] = ts_list
+        response["success"] = "success"
+    return JsonResponse(response)
+
+
 def region_well_obs(request):
     """
     Ajax controller to get the observation count for wells for a given aquifer and variable
@@ -683,8 +700,8 @@ def variable_tabulator(request):
     data_dict = []
 
     vars = session.query(Variable).order_by(Variable.id)[
-        (page * size) : ((page + 1) * size)
-    ]
+           (page * size) : ((page + 1) * size)
+           ]
 
     for var in vars:
         json_dict = {

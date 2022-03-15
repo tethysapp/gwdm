@@ -938,6 +938,22 @@ def get_timeseries(well_id: str, variable_id: int) -> List:
     return timeseries
 
 
+def get_batch_ts(variable_id: int, wells_features: str) -> List:
+    """
+    Get a List of Timeseries
+
+    Args:
+        variable_id: Variable Id Integer as listed in the database
+        wells_features: FeatureCollection str from the interface
+
+    Returns:
+        List of Timeseries from FeatureCollection
+    """
+    wells_features = json.loads(wells_features)
+    ts_list = [get_timeseries(feature["id"], variable_id) for feature in wells_features["features"]]
+    return ts_list
+
+
 def get_well_obs(aquifer_id: int, variable_id: int) -> Dict:
     """
     Get a Dict containing the Count of Measurements for each well in an aquifer

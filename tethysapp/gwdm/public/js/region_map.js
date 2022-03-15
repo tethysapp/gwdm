@@ -20,9 +20,11 @@ var LIBRARY_OBJECT = (function() {
         contourLayer,
         contourTimeLayer,
         contourGroup,
+        currentFeatures,
         drawControl,
         drawGroup,
         // drawOptions,
+        $getMultWellsBtn,
         $geoserverUrl,
         geojsonMarkerOptions,
         interpolationGroup,
@@ -31,6 +33,7 @@ var LIBRARY_OBJECT = (function() {
         markers,
         min_obs,
         max_obs,
+        $modalWarning,
         $modalChart,
         $tsToggle,
         overlay_maps,
@@ -55,6 +58,7 @@ var LIBRARY_OBJECT = (function() {
     var add_wms,
         get_ts,
         generate_chart,
+        generate_mult_chart,
         get_region_aquifers,
         get_well_obs,
         get_wms_datasets,
@@ -68,11 +72,13 @@ var LIBRARY_OBJECT = (function() {
         init_map,
         init_slider,
         markers_style_function,
+        multi_wells_warning,
         original_map_chart,
         resize_map_chart,
         reset_alert,
         reset_form,
         set_outlier,
+        toggle_chart_labels,
         view_region,
         view_aquifer,
         view_wells,
@@ -108,9 +114,11 @@ var LIBRARY_OBJECT = (function() {
     init_jquery_vars = function(){
         $geoserverUrl = $("#geoserver-text-input").val();
         $modalChart = $("#chart-modal");
+        $modalWarning = $("#warning-modal");
         $threddsUrl = $("#thredds-text-input").val();
         region = $("#region-text-input").val();
         user_status = $("#user-info").attr('user-status');
+        $getMultWellsBtn = $(".submit-get-measurements");
         $tsToggle = false;
     };
 
@@ -248,8 +256,47 @@ var LIBRARY_OBJECT = (function() {
                 }
             });
             featureDict["features"] = features;
-            console.log(featureDict);
+            multi_wells_warning(featureDict);
+            currentFeatures = featureDict;
         });
+
+        multi_wells_warning = function(featuresJson){
+            if (featuresJson.features.length !== 0) {
+                if (featuresJson.features.length > 0) {
+                    $modalWarning.modal("show");
+                    addWarningMessage("Number of Wells selected are " + featuresJson.features.length + ". Are you sure you want to proceed?")
+                    $getMultWellsBtn.removeClass("hidden");
+                } else {
+                    addErrorMessage("Unknown error. Please try again.");
+                    $getMultWellsBtn.addClass("hidden");
+                }
+            } else {
+                $modalWarning.modal("show");
+                // $(".warning").innerHTML("No Wells within the geometry. Please Try again.");
+                addErrorMessage("No Wells were selected. Please try again.");
+                $getMultWellsBtn.addClass("hidden");
+            }
+        }
+
+        $(".submit-get-measurements").click(function(){
+            var aquifer_id = $("#aquifer-select option:selected").val();
+            var variable_id = $("#variable-select option:selected").val();
+            var data = new FormData();
+            data.append("aquifer_id", aquifer_id);
+            data.append("variable_id", variable_id);
+            data.append("wells_dict", JSON.stringify(currentFeatures));
+            var xhr = ajax_update_database_with_file("get-multi-timeseries", data);
+            xhr.done(function (return_data) {
+                if ("success" in return_data) {
+                    // $modalChart.modal('show');
+                    // reset_form(return_data);
+                    generate_mult_chart(return_data);
+                } else if ("error" in return_data) {
+                    // addErrorMessage(return_data["error"]);
+                    console.log('err');
+                }
+            });
+        })
 
         highlight_layer = function(layerID) {
             let highlight = {
@@ -281,6 +328,17 @@ var LIBRARY_OBJECT = (function() {
                 onClick: function() {
                     // view_region(region, get_region_aquifers);
                     location.reload();
+                }
+            }]
+        }).addTo(map);
+
+        L.easyButton({
+            states: [{
+                stateName: 'multi-chart',
+                icon: 'glyphicon-signal',
+                title: 'Multi Wells Chart',
+                onClick: function() {
+                    $("#multi-chart-modal").modal("show");
                 }
             }]
         }).addTo(map);
@@ -669,6 +727,54 @@ var LIBRARY_OBJECT = (function() {
         });
     };
 
+
+    generate_mult_chart = function(result){
+        let seriesOptions = [];
+        result["ts_list"].forEach((ts, idx) => {
+            seriesOptions.push({data: ts, name: currentFeatures["features"][idx]["properties"]["well_name"]})
+        });
+        var variable_name = $("#variable-select option:selected").text();
+        Highcharts.stockChart('multi-plotter',{
+            chart:{
+                type: 'spline'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: false
+                    },
+                    marker: {
+                        enabled: true,
+                        radius: 3
+                    }
+                }
+            },
+            // title: {
+            //     text: result['well_info']["well_name"] +" "+ variable_name + " values",
+            //     style: {
+            //         fontSize: '14px'
+            //     }
+            // },
+            // xAxis: {
+            //     title: {
+            //         text: result['well_info']['attr_dict']
+            //     }
+            // },
+            yAxis: {
+                title: {
+                    text: variable_name
+                }
+
+            },
+            exporting: {
+                enabled: true
+            },
+            series: seriesOptions
+
+        });
+    };
+
+
     generate_chart = function(result){
         var variable_name = $("#variable-select option:selected").text();
         Highcharts.stockChart('chart',{
@@ -711,7 +817,7 @@ var LIBRARY_OBJECT = (function() {
                 name: variable_name
             }]
 
-        }, function (chart) { // on complete
+        }, function(chart) {
             chart.renderer.button('Toggle Labels', 0, 0)
                 .attr({
                     zIndex: 3
@@ -723,8 +829,21 @@ var LIBRARY_OBJECT = (function() {
                     chart.series[0].update(opt);
                 })
                 .add();
-
         });
+    };
+
+    toggle_chart_labels = function(chart) { // on complete
+        chart.renderer.button('Toggle Labels', 0, 0)
+            .attr({
+                zIndex: 3
+            })
+            .on('click', function () {
+                let opt = chart.series[0].options;
+                opt.dataLabels.enabled = !opt.dataLabels.enabled;
+                // opt.marker.enabled = !opt.marker.enabled;
+                chart.series[0].update(opt);
+            })
+            .add();
     };
 
     get_wms_datasets = function(aquifer_name, variable_id, region_id){
@@ -1006,7 +1125,6 @@ var LIBRARY_OBJECT = (function() {
             var src = wmsUrl + "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&LAYER=tsvalue"+
                 "&colorscalerange="+range_min+","+range_max+"&PALETTE="+symbology+"&transparent=TRUE";
             $("#legend-image").attr("src", src);
-            console.log(src);
         });
 
         $("#opacity_val").change(function(){
@@ -1054,7 +1172,8 @@ var LIBRARY_OBJECT = (function() {
             drawGroup.addLayer(drawnLayer);
             let polygonGeoJson = e.layer.toGeoJSON();
             let ptsWithin = turf.within(markers.toGeoJSON(), polygonGeoJson);
-            console.log(ptsWithin);
+            multi_wells_warning(ptsWithin);
+            currentFeatures = ptsWithin;
         });
 
         map.on('draw:drawstart', (e) => {

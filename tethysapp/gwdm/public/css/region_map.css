@@ -9,7 +9,12 @@
 /*    position: relative;*/
 /*}*/
 #chart-modal .modal-dialog {
-    width: 75%
+    width: 75%;
+    position: relative;
+}
+#multi-chart-modal .modal-dialog {
+    width: 75%;
+    position: relative;
 }
 .min_input{
     background: #888888;

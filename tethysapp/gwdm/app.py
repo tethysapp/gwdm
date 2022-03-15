@@ -89,6 +89,11 @@ class Gwdm(TethysAppBase):
                 controller="gwdm.controllers_ajax.region_timeseries",
             ),
             UrlMap(
+                name="region-map-multi-ts",
+                url="gwdm/region-map/get-multi-timeseries",
+                controller="gwdm.controllers_ajax.region_multiple_timeseries",
+            ),
+            UrlMap(
                 name="region-map-well-obs",
                 url="gwdm/region-map/get-well-obs",
                 controller="gwdm.controllers_ajax.region_well_obs",

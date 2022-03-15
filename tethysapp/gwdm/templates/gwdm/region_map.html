@@ -109,6 +109,59 @@
 
 {# Use the after_app_content block for modals #}
 {% block after_app_content %}
+<div class="modal fade" id="warning-modal" tabindex="-1" role="dialog" aria-labelledby="warning-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h5 class="modal-title" id="warning-modal-label">Info</h5>
+            </div>
+            <div class="modal-body">
+                <div class="error warning">
+                    <div id="message" class="alert alert-danger hidden" role="alert"></div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success submit-get-measurements hidden" data-dismiss="modal" data-toggle="modal" data-target="#multi-chart-modal">View Timeseries</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Show TS Plot -->
+<div class="modal fade" id="multi-chart-modal" tabindex="-1" role="dialog" aria-labelledby="chart-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h5 class="modal-title" id="multi-chart-modal-title">Multi Wells Chart</h5>
+            </div>
+            <div class="modal-body">
+                <div class="error"></div>
+                    <div class="chart-wrapper">
+                        <div class="chart-inner" style="width:100%;height:100%;">
+                            <div  align="center" id="multi-cube" class="sk-cube-grid hidden">
+                                <div class="sk-cube sk-cube1"></div>
+                                <div class="sk-cube sk-cube2"></div>
+                                <div class="sk-cube sk-cube3"></div>
+                                <div class="sk-cube sk-cube4"></div>
+                                <div class="sk-cube sk-cube5"></div>
+                                <div class="sk-cube sk-cube6"></div>
+                                <div class="sk-cube sk-cube7"></div>
+                                <div class="sk-cube sk-cube8"></div>
+                                <div class="sk-cube sk-cube9"></div>
+                            </div>
+                            <div id="multi-plotter" name="multi-plotter" style="height:100%;width:100%" >
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <!--Show TS Plot -->
 <div class="modal fade" id="chart-modal" tabindex="-1" role="dialog" aria-labelledby="chart-modal-label">
     <div class="modal-dialog" role="document">
