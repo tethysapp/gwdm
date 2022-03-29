@@ -28,6 +28,7 @@ var LIBRARY_OBJECT = (function() {
         $geoserverUrl,
         geojsonMarkerOptions,
         interpolationGroup,
+        lastPopup,
         layer_control,
         map,
         markers,
@@ -45,6 +46,7 @@ var LIBRARY_OBJECT = (function() {
         slidervar,
         $threddsUrl,
         tdWmsLayer,
+        ts_chart,
         user_status,
         wfs_response,
         wmsLayer,
@@ -56,6 +58,8 @@ var LIBRARY_OBJECT = (function() {
      *************************************************************************/
 
     var add_wms,
+        get_chart_min_date,
+        get_chart_max_date,
         get_ts,
         generate_chart,
         generate_mult_chart,
@@ -71,6 +75,7 @@ var LIBRARY_OBJECT = (function() {
         init_dropdown,
         init_map,
         init_slider,
+        load_markers,
         markers_style_function,
         multi_wells_warning,
         original_map_chart,
@@ -79,6 +84,7 @@ var LIBRARY_OBJECT = (function() {
         reset_form,
         set_outlier,
         toggle_chart_labels,
+        update_general_chart,
         view_region,
         view_aquifer,
         view_wells,
@@ -578,6 +584,19 @@ var LIBRARY_OBJECT = (function() {
         }
     };
 
+    load_markers = function(wfs_obj){
+        markers.clearLayers();
+        markers.bringToFront();
+        L.geoJson(wfs_obj, {
+            // style: wfs_style_function,
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, markers_style_function(feature));
+            },
+            onEachFeature: wfs_feature_function,
+            filter: wfs_filter_function
+        }).addTo(markers);
+    };
+
     view_wells = function(aquifer_id){
         var defaultParameters = {
             service : 'WFS',
@@ -594,26 +613,20 @@ var LIBRARY_OBJECT = (function() {
         var URL = $geoserverUrl + L.Util.getParamString(parameters);
 
         // aquiferGroup.clearLayers();
-        markers.clearLayers();
-        markers.bringToFront();
+
         var ajax = $.ajax({
             url : URL,
             dataType : 'jsonp',
             jsonpCallback : 'getWells',
             success : function (response) {
                 wfs_response = response;
-                L.geoJson(wfs_response, {
-                    // style: wfs_style_function,
-                    pointToLayer: function (feature, latlng) {
-                        return L.circleMarker(latlng, markers_style_function(feature));
-                    },
-                    onEachFeature: wfs_feature_function
-                }).addTo(markers);
+                load_markers(wfs_response);
             }
         });
     };
 
     get_ts = function(e){
+        lastPopup = e;
         if($tsToggle===false) {
             var popup = e.target.getPopup();
             var well_id = popup._source.feature.id;
@@ -631,6 +644,7 @@ var LIBRARY_OBJECT = (function() {
                     // reset_form(return_data);
                     resize_map_chart();
                     generate_chart(return_data);
+
                     // addSuccessMessage("Aquifer Update Successful!");
                 } else if ("error" in return_data) {
                     // addErrorMessage(return_data["error"]);
@@ -712,18 +726,7 @@ var LIBRARY_OBJECT = (function() {
             }]
 
         }, function (chart) {
-            chart.renderer.button('Toggle Labels', 0, 0)
-                .attr({
-                    zIndex: 3
-                })
-                .on('click', function () {
-                    let opt = chart.series[0].options;
-                    opt.dataLabels.enabled = !opt.dataLabels.enabled;
-                    // opt.marker.enabled = !opt.marker.enabled;
-                    chart.series[0].update(opt);
-                })
-                .add();
-
+            toggle_chart_labels(chart);
         });
     };
 
@@ -774,10 +777,74 @@ var LIBRARY_OBJECT = (function() {
         });
     };
 
+    get_chart_min_date  = function(first_entry){
+        let interp_raster = $("#select-interpolation option:selected").val();
+        let min_val;
+        if(interp_raster !== ""){
+            let first_time = tdWmsLayer._timeDimension.getAvailableTimes()[0];
+            min_val = Math.min(first_time, first_entry);
+        } else {
+            min_val = first_entry
+        }
+        return min_val
+    };
+
+    get_chart_max_date = function(last_entry){
+        let interp_raster = $("#select-interpolation option:selected").val();
+        let max_val;
+        if(interp_raster !== ""){
+            let last_time = tdWmsLayer._timeDimension.getAvailableTimes()[
+            tdWmsLayer._timeDimension.getAvailableTimes().length - 1
+                ]
+            max_val = Math.max(last_time, last_entry);
+        } else {
+            max_val = last_entry
+        }
+        return max_val
+    }
+
+    update_general_chart = function(){
+        let first_entry = ts_chart.series[0].processedXData[0];
+        let last_entry = ts_chart.series[0].processedXData[ts_chart.series[0].processedXData.length -1];
+        ts_chart.update({
+            xAxis: {
+                min: get_chart_min_date(first_entry),
+                max: get_chart_max_date(last_entry),
+                plotBands: [
+                    {
+                        color: "rgba(0,0,0,0.05)",
+                        from: new Date(1948, 0, 1),
+                        to: tdWmsLayer._timeDimension.getAvailableTimes()[0],
+                        id: "band1"
+                    },
+                    {
+                        color: "rgba(0,0,0,0.05)",
+                        from:
+                            tdWmsLayer._timeDimension.getAvailableTimes()[
+                            tdWmsLayer._timeDimension.getAvailableTimes()
+                                .length - 1
+                                ],
+                        to:  new Date(2050, 0, 1),
+                        id: "band2"
+                    }
+                ],
+                plotLines: [
+                    {
+                        color: "red",
+                        dashStyle: "solid",
+                        value: tdWmsLayer._timeDimension.getCurrentTime(),
+                        width: 2,
+                        id: "pbCurrentTime"
+                    }
+                ]
+            }
+        })
+    };
+
 
     generate_chart = function(result){
         var variable_name = $("#variable-select option:selected").text();
-        Highcharts.stockChart('chart',{
+        ts_chart = Highcharts.chart('chart',{
             chart:{
                 type: 'spline'
             },
@@ -799,6 +866,7 @@ var LIBRARY_OBJECT = (function() {
                 }
             },
             xAxis: {
+                type: "datetime",
                 title: {
                     text: result['well_info']['attr_dict']
                 }
@@ -817,22 +885,16 @@ var LIBRARY_OBJECT = (function() {
                 name: variable_name
             }]
 
-        }, function(chart) {
-            chart.renderer.button('Toggle Labels', 0, 0)
-                .attr({
-                    zIndex: 3
-                })
-                .on('click', function () {
-                    let opt = chart.series[0].options;
-                    opt.dataLabels.enabled = !opt.dataLabels.enabled;
-                    // opt.marker.enabled = !opt.marker.enabled;
-                    chart.series[0].update(opt);
-                })
-                .add();
+        }, function(chart){
+            toggle_chart_labels(chart);
         });
+        let interp_raster = $("#select-interpolation option:selected").val();
+        if (interp_raster!==""){
+            update_general_chart();
+        }
     };
 
-    toggle_chart_labels = function(chart) { // on complete
+    toggle_chart_labels = function(chart) {
         chart.renderer.button('Toggle Labels', 0, 0)
             .attr({
                 zIndex: 3
@@ -907,7 +969,7 @@ var LIBRARY_OBJECT = (function() {
             if("success" in return_data) {
                 var range_min = return_data['range_min'];
                 var range_max = return_data['range_max'];
-                var drawdown_dict = return_data['drawdown']
+                var drawdown_dict = return_data['drawdown'];
                 $("#leg_min").val(range_min);
                 $("#leg_max").val(range_max);
                 add_wms(wms_endpoint, range_min, range_max, 'rainbow');
@@ -940,14 +1002,15 @@ var LIBRARY_OBJECT = (function() {
         });
 
         contourTimeLayer = L.timeDimension.layer.wms(contourLayer,{
-            updateTimeDimension:true,
-            setDefaultTime:true,
-            cache:48
+            requestTimefromCapabilities: true,
+            updateTimeDimension: true,
+            updateTimeDimensionMode: 'replace',
         });
 
         wmsLayer = L.tileLayer.wms(wmsUrl, {
             layers: 'tsvalue',
             format: 'image/png',
+            // dimension: 'time',
             transparent: true,
             styles: 'boxfill/'+style,
             opacity: '1.0',
@@ -957,9 +1020,10 @@ var LIBRARY_OBJECT = (function() {
         });
 
         tdWmsLayer = L.timeDimension.layer.wms(wmsLayer,{
-            updateTimeDimension:true,
-            setDefaultTime:true,
-            cache:48
+            requestTimefromCapabilities: true,
+            updateTimeDimension: true,
+            updateTimeDimensionMode: 'replace',
+
         });
         // tdWmsLayer.addTo(map);
         // contourTimeLayer.addTo(map);
@@ -970,6 +1034,11 @@ var LIBRARY_OBJECT = (function() {
         var src = wmsUrl + "?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&LAYER=tsvalue"+
             "&colorscalerange="+range_min+","+range_max+"&PALETTE=boxfill/"+style+"&transparent=TRUE";
         $("#legend-image").attr("src", src);
+        if(ts_chart !== undefined){
+            get_ts(lastPopup);
+            // console.log(lastPopup);
+            // update_general_chart();
+        }
     };
 
     init_dropdown = function () {
@@ -1154,16 +1223,7 @@ var LIBRARY_OBJECT = (function() {
             }
             rangeMin = document.getElementById('input-number-min').value;
             rangeMax = document.getElementById('input-number-max').value;
-            markers.clearLayers();
-            markers.bringToFront()
-            L.geoJson(wfs_response, {
-                // style: wfs_style_function,
-                pointToLayer: function (feature, latlng) {
-                    return L.circleMarker(latlng, markers_style_function(feature));
-                },
-                onEachFeature: wfs_feature_function,
-                filter: wfs_filter_function
-            }).addTo(markers);
+            load_markers(wfs_response)
         });
 
         map.on('draw:created', (e) => {
@@ -1178,7 +1238,22 @@ var LIBRARY_OBJECT = (function() {
 
         map.on('draw:drawstart', (e) => {
             drawGroup.clearLayers();
+            load_markers(wfs_response);
         });
+
+        map.timeDimension.on('timeload', (function() {
+            if (!ts_chart){
+                return;
+            }
+            ts_chart.xAxis[0].removePlotBand("pbCurrentTime");
+            ts_chart.xAxis[0].addPlotLine({
+                color: 'red',
+                dashStyle: 'solid',
+                value: new Date(map.timeDimension.getCurrentTime()),
+                width: 2,
+                id: 'pbCurrentTime'
+            });
+        }));
 
     });
 
