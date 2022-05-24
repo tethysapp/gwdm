@@ -23,6 +23,7 @@ from .utils import (
     get_region_variable_select,
     get_aquifer_select,
     get_variable_select,
+    get_interpolation_dates,
     thredds_text_gizmo,
     get_region_name,
     get_session_obj,
@@ -144,7 +145,7 @@ def interpolation(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
     variable_select = get_region_variable_select(None)
-    dates = [(i, i) for i in range(1948, 2021)]
+    dates = get_interpolation_dates()
     output_file_input = TextInput(
         display_text="Output Filename. Unique Identifier to differentiate from different interpolation runs.",
         name="output-file-input",
@@ -170,6 +171,9 @@ def interpolation(request):
         name="select-raster-interval",
         multiple=False,
         options=[
+            ("1 month", 1),
+            ("3 months", 3),
+            ("6 months", 6),
             ("1 year", 12),
             ("2 years", 24),
             ("3 years", 36),
@@ -197,19 +201,19 @@ def interpolation(request):
         name="start-date",
         multiple=False,
         options=dates,
-        initial=1970,
+        initial=2000,
     )
     end_date = SelectInput(
         display_text="Interpolation End Date",
         name="end-date",
         multiple=False,
         options=dates,
-        initial=1980,
+        initial=2020,
     )
     select_porosity = TextInput(
         display_text="Enter the storage coefficient for the aquifer:",
         name="select-porosity",
-        initial="0.05",
+        initial="0.15",
     )
 
     gap_size = TextInput(
@@ -469,6 +473,11 @@ def upload_rasters(request):
     aquifer_select = get_aquifer_select(None)
     variable_select = get_variable_select()
 
+    output_file_input = TextInput(
+        display_text="Output Filename. Unique Identifier to differentiate from different interpolation runs.",
+        name="output-file-input",
+    )
+
     clip_select = SelectInput(
         display_text="Clip NetCDF Files? ",
         name="clip-select",
@@ -491,6 +500,7 @@ def upload_rasters(request):
         "region_select": region_select,
         "aquifer_select": aquifer_select,
         "variable_select": variable_select,
+        "output_file_input": output_file_input,
         "clip_select": clip_select,
         "attributes_button": attributes_button
     }

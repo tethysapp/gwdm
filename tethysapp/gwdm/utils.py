@@ -1261,7 +1261,7 @@ def clip_nc_file(region: int, aquifer: str, ds: xr.Dataset):
 
 
 def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
-                     clip: str, rename_dict: Dict) -> Dict:
+                     file_name: str, clip: str, rename_dict: Dict) -> Dict:
     """
     Upload NetCDF files to the Thredds Directory
 
@@ -1270,6 +1270,7 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
         aquifer: Aquifer Name as listed in the Database
         variable: Variable ID as listed in the Database
         file: File(s) to upload
+        file_name: Unique File Name string
         clip: Boolean string to clip uploaded netcdf files
         rename_dict: Dict with rename mapping
 
@@ -1287,12 +1288,18 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
         aquifer_dir = os.path.join(region_dir, str(aquifer))
         if not os.path.exists(aquifer_dir):
             os.makedirs(aquifer_dir)
+        counter = 1
+        f_len = len(file)
         for f in file:
             f_name = f"{aquifer}_{variable}_{time.time()}.nc"
             f_path = os.path.join(aquifer_dir, f_name)
             with open(f_path, "wb") as f_local:
                 f_local.write(f.read())
-            new_f_name = f"{aquifer}_{variable}_{time.time()}.nc"
+            if f_len == 1:
+                f_str = file_name
+            else:
+                f_str = f"{file_name}-{counter}"
+            new_f_name = f"{aquifer}_{variable}_{f_str}_{time.time()}.nc"
             new_path = os.path.join(aquifer_dir, new_f_name)
             ds = xr.open_dataset(f_path)
             ds = ds.rename(rename_dict)
@@ -1301,6 +1308,7 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
                 ds = clip_nc_file(region, aquifer_name, ds)
             ds.to_netcdf(new_path)
             os.remove(f_path)
+            counter += 1
         response["success"] = "success"
     except Exception as e:
         response["error"] = str(e)
@@ -1419,3 +1427,9 @@ def date_format_validator(date_format: str) -> bool:
         is_valid = False
 
     return is_valid
+
+
+def get_interpolation_dates():
+    current_year = datetime.today().year
+    dates = [(i, i) for i in range(1948, current_year + 1)]
+    return dates

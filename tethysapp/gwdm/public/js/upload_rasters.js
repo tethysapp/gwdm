@@ -61,6 +61,7 @@ var LIBRARY_OBJECT = (function() {
         $("#lon_attributes").html('');
         $("#time_attributes").html('');
         $("#display_attributes").html('');
+        $("#output-file-input").html('');
         $("#lat_attributes").val(null).trigger('change.select2');
         $("#lon_attributes").val(null).trigger('change.select2');
         $("#display_attributes").val(null).trigger('change.select2');
@@ -132,6 +133,7 @@ var LIBRARY_OBJECT = (function() {
         var region = $("#region-select option:selected").val();
         var aquifer = $("#aquifer-select option:selected").text();
         var variable = $("#variable-select option:selected").val();
+        var file_name = $("#output-file-input").val();
         var clip = $("#clip-select option:selected").val();
         var ncfiles = $("#shp-upload-input")[0].files;
         var lat = $("#lat_attributes option:selected").val();
@@ -146,6 +148,12 @@ var LIBRARY_OBJECT = (function() {
         }
         if(variable === ""){
             addErrorMessage("Variable cannot be empty! Please select a Variable.");
+            return false;
+        }else{
+            reset_alert();
+        }
+        if(file_name === ""){
+            addErrorMessage("Output File Name cannot be empty! Please enter a value.");
             return false;
         }else{
             reset_alert();
@@ -180,6 +188,7 @@ var LIBRARY_OBJECT = (function() {
         data.append("region", region);
         data.append("aquifer", aquifer);
         data.append("variable", variable);
+        data.append("file_name", file_name);
         data.append("clip", clip);
         data.append("lat", lat);
         data.append("lon", lon);
