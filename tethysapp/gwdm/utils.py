@@ -205,7 +205,7 @@ def get_region_variables_list(region_id: Union[int, None]) -> List:
             (f"{variable.name}, {variable.units}", variable.id)
             for variable in variables
         ]
-        thredds_directory = app.get_custom_setting("gw_thredds_directoy")
+        thredds_directory = app.get_custom_setting("gw_thredds_directory")
         thredds_vars = list(
             {
                 int(re.findall("_\d_", _file)[0][1])
@@ -347,7 +347,7 @@ def get_num_rasters() -> int:
     Returns:
         The total number of rasters in the app
     """
-    thredds_directory = app.get_custom_setting("gw_thredds_directoy")
+    thredds_directory = app.get_custom_setting("gw_thredds_directory")
     num_rasters = sum([len(files) for r, d, files in os.walk(thredds_directory)])
     return int(num_rasters)
 
@@ -824,7 +824,6 @@ def process_measurements_file(
         gdf = gdf.rename(columns=rename_cols)
         pd.to_datetime(gdf["time"], format=time_format)
         if gdf.isnull().sum().sum() == 0:
-
             rename_cols = {well_id: "well_id", m_time: "time", value: "value"}
             gdf = gdf.rename(columns=rename_cols)
             gdf["variable_id"] = variable_id
@@ -900,7 +899,8 @@ def process_measurements_file(
         if temp_dir is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-
+    print("\nMyTest")
+    print(response)
     return response
 
 
@@ -1058,7 +1058,12 @@ def get_wms_datasets(aquifer_name: str, variable_id: str, region_id: str) -> Lis
             .datasets.items()
             if f"_{variable_id}_" in name
         ]
-    except KeyError:
+        print(c)
+        print(c.catalog_refs[f"{region_id}"])
+        print(urls)
+    except KeyError as e:
+        print("found error")
+        print(e)
         urls = []
 
     return urls
@@ -1078,7 +1083,7 @@ def get_wms_metadata(
     Returns:
         The min and max value for a selected interpolation netcdf file
     """
-    thredds_directory = app.get_custom_setting("gw_thredds_directoy")
+    thredds_directory = app.get_custom_setting("gw_thredds_directory")
     # aquifer_dir = os.path.join(thredds_directory, str(region_id), str(aquifer_obj[1]))
     aquifer_name = aquifer_name.replace(" ", "_")
     file_path = os.path.join(thredds_directory, str(region_id), aquifer_name, file_name)
@@ -1151,7 +1156,7 @@ def get_thredds_status() -> dict:
         A dict with the thredds groundwater directory status
     """
 
-    thredds_directory = app.get_custom_setting("gw_thredds_directoy")
+    thredds_directory = app.get_custom_setting("gw_thredds_directory")
     if os.path.exists(thredds_directory):
         directory_status = "Configured"
     else:
@@ -1279,7 +1284,7 @@ def process_nc_files(region: int, aquifer: str, variable: str, file: Any,
     """
     response = {}
     try:
-        thredds_directory = app.get_custom_setting("gw_thredds_directoy")
+        thredds_directory = app.get_custom_setting("gw_thredds_directory")
         region_dir = os.path.join(thredds_directory, str(region))
         aquifer_name = aquifer
         aquifer = aquifer.replace(" ", "_")
@@ -1350,7 +1355,7 @@ def delete_bulk_rasters(region: str, aquifer: str, variable: str, raster: str) -
         else:
             variables = [variable]
 
-        thredds_directory = app.get_custom_setting("gw_thredds_directoy")
+        thredds_directory = app.get_custom_setting("gw_thredds_directory")
         region_dir = os.path.join(thredds_directory, str(region_id))
         if aquifer == all_aquifers and variable == all_str and raster == all_str:
             shutil.rmtree(region_dir)
@@ -1398,7 +1403,7 @@ def delete_region_thredds_dir(region_id: str) -> str:
     Returns:
         Success message on region deleted
     """
-    thredds_directory = app.get_custom_setting("gw_thredds_directoy")
+    thredds_directory = app.get_custom_setting("gw_thredds_directory")
     region_path = os.path.join(thredds_directory, region_id)
     if os.path.exists(region_path):
         shutil.rmtree(region_path)

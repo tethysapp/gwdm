@@ -79,15 +79,15 @@ var LIBRARY_OBJECT = (function() {
     });
 
     var viewIcon = function(cell, formatterParams){ //plain text value
-        return "<span class='glyphicon glyphicon-sunglasses view-aquifer-tabulator'></span>";
+        return "<span class='sunglasses view-aquifer-tabulator'></span>";
     };
 
     var deleteIcon = function(cell, formatterParams){ //plain text value
-        return "<span class='glyphicon glyphicon-remove'></span>";
+        return "<span class='x-lg'></span>";
     };
 
     var updateIcon = function(cell, formatterParams){ //plain text value
-        return "<span class='glyphicon glyphicon-floppy-disk'></span>";
+        return "<span class='device-hdd'></span>";
     };
 
     delete_aquifer = function(e, cell){

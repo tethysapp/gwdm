@@ -5,6 +5,7 @@ from django.shortcuts import render, reverse, redirect
 from tethys_sdk.compute import get_scheduler
 from tethys_sdk.gizmos import Button, TextInput, SelectInput
 from tethys_sdk.gizmos import JobsTable, PlotlyView
+from tethys_sdk.routing import controller
 
 from .app import Gwdm as app
 from .model import Variable
@@ -34,6 +35,10 @@ from .utils import user_permission_test
 job_manager = app.get_job_manager()
 
 
+@controller(
+    name="home", 
+    url="gwdm",
+)
 def home(request):
     """
     Controller for the app home page.
@@ -45,13 +50,17 @@ def home(request):
     return render(request, "gwdm/home.html", context)
 
 
+@controller(
+    name="config", 
+    url="gwdm/config",
+)
 def config(request):
     """
     Controller for helping setup the app
     """
     add_geoserver_config = Button(
         display_text="Configure GeoServer",
-        icon="glyphicon glyphicon-plus",
+        icon="plus-lg",
         style="success",
         name="submit",
         attributes={"id": "submit"},
@@ -69,6 +78,10 @@ def config(request):
     return render(request, "gwdm/config.html", context)
 
 
+@controller(
+    name="metrics",
+    url="gwdm/metrics",
+)
 def metrics(request):
     """
     Controller for the app metrics page.
@@ -97,6 +110,10 @@ def metrics(request):
     return render(request, "gwdm/metrics.html", context)
 
 
+@controller(
+    name="region-map",
+    url="gwdm/region-map",
+)
 def region_map(request):
     """
     Controller for the Region Map home page.
@@ -141,6 +158,10 @@ def region_map(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="interpolation",
+    url="gwdm/interpolation",
+)
 def interpolation(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
@@ -249,7 +270,7 @@ def interpolation(request):
     # 'spacing': '1MS'
     add_button = Button(
         display_text="Submit",
-        icon="glyphicon glyphicon-plus",
+        icon="plus-lg",
         style="primary",
         name="submit",
         attributes={"id": "submit"},
@@ -278,6 +299,10 @@ def interpolation(request):
     return render(request, "gwdm/interpolation.html", context)
 
 
+@controller(
+    name="add-region",
+    url="gwdm/add-region",
+)
 @user_passes_test(user_permission_test)
 def add_region(request):
     """
@@ -293,7 +318,7 @@ def add_region(request):
 
     add_button = Button(
         display_text="Add Region",
-        icon="glyphicon glyphicon-plus",
+        icon="plus-lg",
         style="primary",
         name="submit-add-region",
         attributes={"id": "submit-add-region"},
@@ -306,6 +331,10 @@ def add_region(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="update-region",
+    url="gwdm/update-region",
+)
 def update_region(request):
     id_input = TextInput(
         display_text="Region ID",
@@ -332,6 +361,10 @@ def update_region(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="add-aquifer",
+    url="gwdm/add-aquifer",
+)
 def add_aquifer(request):
     """
     Controller for add aquifer
@@ -346,7 +379,7 @@ def add_aquifer(request):
 
     add_button = Button(
         display_text="Add Aquifer",
-        icon="glyphicon glyphicon-plus",
+        icon="plus-lg",
         style="primary",
         name="submit-add-aquifer",
         attributes={"id": "submit-add-aquifer"},
@@ -355,7 +388,7 @@ def add_aquifer(request):
 
     attributes_button = Button(
         display_text="Get Attributes",
-        icon="glyphicon glyphicon-plus",
+        icon="plus-lg",
         style="primary",
         name="submit-get-attributes",
         attributes={"id": "submit-get-attributes"},
@@ -372,6 +405,10 @@ def add_aquifer(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="update-aquifer",
+    url="gwdm/update-aquifer",
+)
 def update_aquifer(request):
     id_input = TextInput(
         display_text="Aquifer ID",
@@ -406,6 +443,10 @@ def update_aquifer(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="add-wells",
+    url="gwdm/add-wells",
+)
 def add_wells(request):
     """
     Controller for add wells
@@ -417,7 +458,7 @@ def add_wells(request):
 
     attributes_button = Button(
         display_text="Get Attributes",
-        icon="glyphicon glyphicon-plus",
+        icon="plus-lg",
         style="primary",
         name="submit-get-attributes",
         attributes={"id": "submit-get-attributes"},
@@ -433,6 +474,10 @@ def add_wells(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="edit-wells",
+    url="gwdm/edit-wells",
+)
 def edit_wells(request):
     geoserver_text_input = geoserver_text_gizmo()
     region_select = get_region_select()
@@ -447,12 +492,16 @@ def edit_wells(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="delete-wells",
+    url="gwdm/delete-wells",
+)
 def delete_wells(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
     delete_button = Button(
         display_text="Delete Wells",
-        icon="glyphicon glyphicon-minus",
+        icon="dash-lg",
         style="danger",
         name="submit-delete-wells",
         attributes={"id": "submit-delete-wells"},
@@ -468,6 +517,10 @@ def delete_wells(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="upload-rasters",
+    url="gwdm/upload-rasters",
+)
 def upload_rasters(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
@@ -490,7 +543,7 @@ def upload_rasters(request):
 
     attributes_button = Button(
         display_text="Get Attributes",
-        icon="glyphicon glyphicon-plus",
+        icon="plus-lg",
         style="primary",
         name="submit-get-attributes",
         attributes={"id": "submit-get-attributes"},
@@ -508,6 +561,10 @@ def upload_rasters(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="delete-rasters",
+    url="gwdm/delete-rasters",
+)
 def delete_rasters(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
@@ -520,7 +577,7 @@ def delete_rasters(request):
     )
     delete_button = Button(
         display_text="Delete Rasters",
-        icon="glyphicon glyphicon-minus",
+        icon="dash-lg",
         style="danger",
         name="submit-delete-rasters",
         attributes={"id": "submit-delete-rasters"},
@@ -538,6 +595,10 @@ def delete_rasters(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="add-measurements",
+    url="gwdm/add-measurements",
+)
 def add_measurements(request):
     region_select = get_region_select()
 
@@ -547,7 +608,7 @@ def add_measurements(request):
 
     attributes_button = Button(
         display_text="Get Attributes",
-        icon="glyphicon glyphicon-plus",
+        icon="plus-lg",
         style="primary",
         name="submit-get-attributes",
         attributes={"id": "submit-get-attributes"},
@@ -570,13 +631,17 @@ def add_measurements(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="update-measurements",
+    url="gwdm/update-measurements",
+)
 def update_measurements(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
     variable_select = get_region_variable_select(None)
     delete_button = Button(
         display_text="Delete Measurements",
-        icon="glyphicon glyphicon-minus",
+        icon="dash-lg",
         style="danger",
         name="submit-delete-measurements",
         attributes={"id": "submit-delete-measurements"},
@@ -593,6 +658,10 @@ def update_measurements(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="add-variable",
+    url="gwdm/add-variable",
+)
 def add_variable(request):
     name_error = ""
     units_error = ""
@@ -651,7 +720,7 @@ def add_variable(request):
 
     add_button = Button(
         display_text="Add Variable",
-        icon="glyphicon glyphicon-plus",
+        icon="plus-lg",
         style="primary",
         name="submit-add-variable",
         attributes={"form": "add-variable-form"},
@@ -670,6 +739,10 @@ def add_variable(request):
 
 
 @user_passes_test(user_permission_test)
+@controller(
+    name="update-variable",
+    url="gwdm/update-variable",
+)
 def update_variable(request):
     id_input = TextInput(
         display_text="Variable ID",
@@ -708,6 +781,10 @@ def update_variable(request):
     return render(request, "gwdm/update_variable.html", context)
 
 
+@controller(
+    name="run-dask",
+    url="gwdm/dask/add/{job_type}",
+)
 def run_job(request, job_type):
     """
     Controller for the app home page.
@@ -733,6 +810,10 @@ def run_job(request, job_type):
     return HttpResponseRedirect(reverse("gwdm:jobs-table"))
 
 
+@controller(
+    name="jobs-table",
+    url="gwdm/dask/jobs_table",
+)
 def jobs_table(request):
     # Use job manager to get all the jobs.
     jobs = job_manager.list_jobs(order_by="-id", filters=None)
@@ -754,7 +835,7 @@ def jobs_table(request):
     home_button = Button(
         display_text="Home",
         name="home_button",
-        attributes={"data-toggle": "tooltip", "data-placement": "top", "title": "Home"},
+        attributes={"data-bs-toggle": "tooltip", "data-bs-placement": "top", "title": "Home"},
         href=reverse("gwdm:home"),
     )
 
@@ -763,6 +844,10 @@ def jobs_table(request):
     return render(request, "gwdm/jobs_table.html", context)
 
 
+@controller(
+    name="result",
+    url="gwdm/dask/result/{job_id}",
+)
 def result(request, job_id):
     # Use job manager to get the given job.
     job = job_manager.get_job(job_id=job_id)
@@ -774,7 +859,7 @@ def result(request, job_id):
     home_button = Button(
         display_text="Home",
         name="home_button",
-        attributes={"data-toggle": "tooltip", "data-placement": "top", "title": "Home"},
+        attributes={"data-bs-toggle": "tooltip", "data-bs-placement": "top", "title": "Home"},
         href=reverse("gwdm:home"),
     )
 
@@ -782,8 +867,8 @@ def result(request, job_id):
         display_text="Show All Jobs",
         name="dask_button",
         attributes={
-            "data-toggle": "tooltip",
-            "data-placement": "top",
+            "data-bs-toggle": "tooltip",
+            "data-bs-placement": "top",
             "title": "Show All Jobs",
         },
         href=reverse("gwdm:jobs-table"),
@@ -799,6 +884,10 @@ def result(request, job_id):
     return render(request, "gwdm/results.html", context)
 
 
+@controller(
+    name="error_message",
+    url="gwdm/dask/error",
+)
 def error_message(request):
     messages.add_message(request, messages.ERROR, "Invalid Scheduler!")
     return redirect(reverse("gwdm:home"))

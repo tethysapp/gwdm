@@ -71,11 +71,11 @@ var LIBRARY_OBJECT = (function() {
     };
 
     init_dropdown = function () {
-        $(".id_attributes").select2();
-        $(".aquifer_attributes").select2();
-        $(".time_attributes").select2();
-        $(".value_attributes").select2();
-        $(".meta_attributes").select2();
+        $(".id_attributes").select2({dropdownParent: $measurementsModal});
+        $(".aquifer_attributes").select2({dropdownParent: $measurementsModal});
+        $(".time_attributes").select2({dropdownParent: $measurementsModal});
+        $(".value_attributes").select2({dropdownParent: $measurementsModal});
+        $(".meta_attributes").select2({dropdownParent: $measurementsModal});
     };
 
 

@@ -50,10 +50,10 @@ var LIBRARY_OBJECT = (function() {
     };
 
     init_dropdown = function () {
-        $(".lat_attributes").select2();
-        $(".lon_attributes").select2();
-        $(".time_attributes").select2();
-        $(".display_attributes").select2();
+        $(".lat_attributes").select2({dropdownParent: $rasterModal});
+        $(".lon_attributes").select2({dropdownParent: $rasterModal});
+        $(".time_attributes").select2({dropdownParent: $rasterModal});
+        $(".display_attributes").select2({dropdownParent: $rasterModal});
     };
 
     reset_dropdown = function(){

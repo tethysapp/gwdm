@@ -1,10 +1,12 @@
 {% extends "gwdm/base.html" %}
 {% load tethys_gizmos %}
-{% load staticfiles %}
+{% load static %}
 
 {% block header_buttons %}
-<div class="header-button glyphicon-button" data-toggle="tooltip" data-placement="bottom" title="Home">
-    <a href="{% url 'gwdm:home' %}"><span class="glyphicon glyphicon-home"></span></a>
+<div class="header-button" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Home">
+    <a href="{% url 'gwdm:home' %}">
+        <i class="bi bi-house-door-fill"></i>
+    </a>
 </div>
 {% endblock %}
 
@@ -58,14 +60,14 @@
 
 {% url 'gwdm:home' as home_url %}
 
-<li class="{% if request.path == home_url %}active{% endif %}"><a href="{{home_url}}">Go Home</a></li>
+<li class="nav-item{% if request.path == home_url %} active{% endif %}"><a href="{{home_url}}">Go Home</a></li>
 <h3>Region Name: {{region_name}}</h3>
 {% gizmo region_select %}
 {% gizmo aquifer_select %}
 {% gizmo variable_select %}
 {% gizmo select_interpolation %}
 <div class="drawdown hidden">
-    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#chart-modal">
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#chart-modal">
         View Drawdown Volume
     </button>
 </div>
@@ -73,12 +75,12 @@
 <div id="map-info" user-status="{% if user.is_superuser or user.is_staff %}admin{% else %} regular{% endif%}"
      region-name="{{region_name}}"></div>
 <div>
-    <input type="checkbox" id="cluster-toggle" name="cluster-toggle" data-toggle="toggle" data-on="On" data-off="Off" data-onstyle="success" data-offstyle="danger">
+    <input type="checkbox" id="cluster-toggle" name="cluster-toggle" data-bs-toggle="toggle" data-on="On" data-off="Off" data-onstyle="success" data-offstyle="danger">
     <label for="cluster-toggle">Cluster Wells</label>
 </div>
 <br>
 <div>
-    <input type="checkbox" id="ts-toggle" name="ts-toggle" data-toggle="toggle" data-on="On" data-off="Off" data-onstyle="success" data-offstyle="danger">
+    <input type="checkbox" id="ts-toggle" name="ts-toggle" data-bs-toggle="toggle" data-on="On" data-off="Off" data-onstyle="success" data-offstyle="danger">
     <label for="ts-toggle">Multiple Well Select</label>
 </div>
 <br>
@@ -113,8 +115,8 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h5 class="modal-title" id="warning-modal-label">Info</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="error warning">
@@ -123,8 +125,8 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success submit-get-measurements hidden" data-dismiss="modal" data-toggle="modal" data-target="#multi-chart-modal">View Timeseries</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success submit-get-measurements hidden" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#multi-chart-modal">View Timeseries</button>
             </div>
         </div>
     </div>
@@ -134,8 +136,8 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h5 class="modal-title" id="multi-chart-modal-title">Multi Wells Chart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="error"></div>
@@ -167,8 +169,8 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h5 class="modal-title" id="chart-modal-label">Chart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="error"></div>

@@ -38,7 +38,7 @@ function addErrorMessage(error, div_id) {
         div_id_string = '#'+div_id;
     }
     $(div_id_string).html(
-        '<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>' +
+        '<span class="exclamation-circle-fill" aria-hidden="true"></span>' +
         '<span class="sr-only">Error:</span> ' + error
     )
         .removeClass('hidden')
@@ -56,7 +56,7 @@ function addSuccessMessage(message, div_id) {
         div_id_string = '#'+div_id;
     }
     $(div_id_string).html(
-        '<span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>' +
+        '<span class="check-circle" aria-hidden="true"></span>' +
         '<span class="sr-only">Sucess:</span> ' + message
     ).removeClass('hidden')
         .removeClass('alert-danger')
@@ -79,9 +79,9 @@ function appendErrorMessage(message, div_id, message_div_id) {
     $('#'+div_id).remove();
     $(message_div_id_string).append(
         '<div '+ div_id_string +' class="alert alert-danger alert-dissmissible" role="alert">' +
-        '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+        '<button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">' +
         '<span aria-hidden="true">&times;</span></button>' +
-        '<span class="glyphicon glyphicon-fire" aria-hidden="true"></span>' +
+        '<span class="cone-striped" aria-hidden="true"></span>' +
         '<span class="sr-only">Error:</span> ' + message + '</div>'
     )
         .removeClass('hidden');
@@ -92,7 +92,7 @@ function addWarningMessage(error, div_id) {
         div_id_string = '#'+div_id;
     }
     $(div_id_string).html(
-        '<span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>' +
+        '<span class="exclamation-diamond-fill" aria-hidden="true"></span>' +
         '<span class="sr-only">Warning:</span> ' + error
     )
         .removeClass('hidden')
@@ -112,7 +112,7 @@ function appendSuccessMessage(message, div_id) {
     }
     $('#message').append(
         '<div '+ div_id_string +' class="alert alert-success" role="alert">' +
-        '<br><span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>' +
+        '<br><span class="check-circle" aria-hidden="true"></span>' +
         '<span class="sr-only">Sucess:</span> ' + message + '</div>'
     )
         .removeClass('hidden');
@@ -255,7 +255,7 @@ function addInfoMessage(message, div_id) {
         div_id_string = '#'+div_id;
     }
     $(div_id_string).html(
-        '<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>' +
+        '<span class="info-circle-fill" aria-hidden="true"></span>' +
         '<span class="sr-only">Info:</span> ' + message
     )
         .removeClass('hidden')

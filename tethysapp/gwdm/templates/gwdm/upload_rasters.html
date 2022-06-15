@@ -1,6 +1,6 @@
 {% extends "gwdm/base.html" %}
 {% load tethys_gizmos %}
-{% load staticfiles %}
+{% load static %}
 
 {% block app_content %}
 
@@ -24,7 +24,7 @@
 
 {% gizmo attributes_button %}
 
-<div type="button" data-toggle="modal" class="btn btn-primary" data-target="#wells-modal">
+<div type="button" data-bs-toggle="modal" class="btn btn-primary" data-bs-target="#wells-modal">
     Raster Wizard
 </div>
 {% endblock %}
@@ -36,8 +36,8 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h5 class="modal-title" id="update-modal-label">Raster Wizard</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" >
                 <div class="attributes hidden">
@@ -71,8 +71,8 @@
 
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success submit-add-rasters" data-dismiss="modal">Add Rasters</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success submit-add-rasters" data-bs-dismiss="modal">Add Rasters</button>
             </div>
         </div>
     </div>

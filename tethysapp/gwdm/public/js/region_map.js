@@ -329,7 +329,7 @@ var LIBRARY_OBJECT = (function() {
         L.easyButton({
             states: [{
                 stateName: 'region-home',
-                icon: 'glyphicon-refresh',
+                icon: 'arrow-repeat',
                 title: 'Region Home',
                 onClick: function() {
                     // view_region(region, get_region_aquifers);
@@ -341,7 +341,7 @@ var LIBRARY_OBJECT = (function() {
         L.easyButton({
             states: [{
                 stateName: 'multi-chart',
-                icon: 'glyphicon-signal',
+                icon: 'reception-4',
                 title: 'Multi Wells Chart',
                 onClick: function() {
                     $("#multi-chart-modal").modal("show");
