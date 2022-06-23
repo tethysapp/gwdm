@@ -40,7 +40,7 @@
 {% if user.is_superuser or user.is_staff %}
 <li class="nav-item title">Configuration</li>
 <li class="nav-item"><a class="nav-link{% if request.path == config_url %} active{% endif %}" href="{{config_url}}">Configure App</a></li>
-<li class="nav-item"><a class="nav-link"{% if request.path == interpolation_url %} active{% endif %} href="{{interpolation_url}}">Interpolation Wizard</a></li>
+<li class="nav-item"><a class="nav-link{% if request.path == interpolation_url %} active{% endif %}" href="{{interpolation_url}}">Interpolation Wizard</a></li>
 <!--<li class="{% if request.path == jobs_table %}active{% endif %}"><a href="{{jobs_table}}">Interpolation Jobs Table</a></li>-->
 <!--<li class="{% if request.path == add_region_url %}active{% endif %}"><a href="{{add_region_url}}">Add Region</a></li>-->
 <!--<li class="{% if request.path == update_region_url %}active{% endif %}"><a href="{{update_region_url}}">Edit Region</a></li>-->
