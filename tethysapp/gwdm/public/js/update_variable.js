@@ -60,11 +60,11 @@ var LIBRARY_OBJECT = (function() {
 
 
     var deleteIcon = function(cell, formatterParams){ //plain text value
-        return "<span class='x-lg'></span>";
+        return "<i class='bi bi-x-lg'></i>";
     };
 
     var updateIcon = function(cell, formatterParams){ //plain text value
-        return "<span class='device-hdd'></span>";
+        return "<i class='bi bi-device-hdd'></i>";
     };
 
     delete_variable = function(e, cell){

@@ -899,8 +899,6 @@ def process_measurements_file(
         if temp_dir is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-    print("\nMyTest")
-    print(response)
     return response
 
 
@@ -1058,12 +1056,7 @@ def get_wms_datasets(aquifer_name: str, variable_id: str, region_id: str) -> Lis
             .datasets.items()
             if f"_{variable_id}_" in name
         ]
-        print(c)
-        print(c.catalog_refs[f"{region_id}"])
-        print(urls)
-    except KeyError as e:
-        print("found error")
-        print(e)
+    except KeyError:
         urls = []
 
     return urls

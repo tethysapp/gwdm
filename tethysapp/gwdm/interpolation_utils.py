@@ -526,7 +526,6 @@ def calculate_aquifer_area(imputed_raster, units):
 
 def clip_nc_file(file_path, aquifer_obj, region_id, storage_coefficient, units):
     thredds_directory = app.get_custom_setting("gw_thredds_directory")
-    print(f'Thredds dir: {thredds_directory}\n')
     aquifer_name = aquifer_obj[1].replace(" ", "_")
     aquifer_dir = os.path.join(thredds_directory, str(region_id), str(aquifer_name))
     if not os.path.exists(aquifer_dir):
@@ -588,7 +587,7 @@ def mlr_interpolation(mlr_dict):
     end_date = mlr_dict["end_date"]
     storage_coefficient = mlr_dict["storage_coefficient"]
     units = mlr_dict["units"]
-    
+
     bbox, wells_query_df, measurements_df, aquifer_obj = extract_query_objects(
         region_id, aquifer_id, variable
     )

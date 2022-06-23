@@ -34,13 +34,13 @@
 {% url 'gwdm:upload-rasters' as upload_rasters %}
 {% url 'gwdm:delete-rasters' as delete_rasters %}
 <br>
-<li class="nav-item{% if request.path == home_url %} active{% endif %}"><a class="nav-link" href="{{home_url}}">Home</a></li>
-<li class="nav-item{% if request.path == metrics_url %} active{% endif %}"><a class="nav-link" href="{{metrics_url}}">Summary Statistics</a></li>
+<li class="nav-item"><a class="nav-link{% if request.path == home_url %} active{% endif %}" href="{{home_url}}">Home</a></li>
+<li class="nav-item"><a class="nav-link{% if request.path == metrics_url %} active{% endif %}" href="{{metrics_url}}">Summary Statistics</a></li>
 
 {% if user.is_superuser or user.is_staff %}
 <li class="nav-item title">Configuration</li>
-<li class="nav-item{% if request.path == config_url %} active{% endif %}"><a class="nav-link" href="{{config_url}}">Configure App</a></li>
-<li class="nav-item{% if request.path == interpolation_url %} active{% endif %}"><a class="nav-link" href="{{interpolation_url}}">Interpolation Wizard</a></li>
+<li class="nav-item"><a class="nav-link{% if request.path == config_url %} active{% endif %}" href="{{config_url}}">Configure App</a></li>
+<li class="nav-item"><a class="nav-link"{% if request.path == interpolation_url %} active{% endif %} href="{{interpolation_url}}">Interpolation Wizard</a></li>
 <!--<li class="{% if request.path == jobs_table %}active{% endif %}"><a href="{{jobs_table}}">Interpolation Jobs Table</a></li>-->
 <!--<li class="{% if request.path == add_region_url %}active{% endif %}"><a href="{{add_region_url}}">Add Region</a></li>-->
 <!--<li class="{% if request.path == update_region_url %}active{% endif %}"><a href="{{update_region_url}}">Edit Region</a></li>-->
@@ -59,13 +59,13 @@
   </div>
 </a>
 <div id='submenu1' class="collapse sidebar-submenu {% if request.path == add_region_url or  request.path == update_region_url %}in{% endif %}">
-  <li class="nav-item{% if request.path == add_region_url %} active{% endif %}">
-    <a class="nav-link" href="{{add_region_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == add_region_url %} active{% endif %}" href="{{add_region_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Region</span>
     </a>
   </li>
-  <li class="nav-item{% if request.path == update_region_url %} active{% endif %}">
-    <a class="nav-link" href="{{update_region_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == update_region_url %} active{% endif %}" href="{{update_region_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Edit Region</span>
     </a>
   </li>
@@ -76,13 +76,13 @@
   </div>
 </a>
 <div id='submenu2' class="collapse sidebar-submenu {% if request.path == add_aquifer_url or  request.path == update_aquifer_url %}in{% endif %}">
-  <li class="nav-item{% if request.path == add_aquifer_url %} active{% endif %}">
-    <a class="nav-link" href="{{add_aquifer_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == add_aquifer_url %} active{% endif %}" href="{{add_aquifer_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Aquifer</span>
     </a>
   </li>
-  <li class="nav-item{% if request.path == update_aquifer_url %} active{% endif %}">
-    <a class="nav-link" href="{{update_aquifer_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == update_aquifer_url %} active{% endif %}" href="{{update_aquifer_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Edit Aquifer</span>
     </a>
   </li>
@@ -94,18 +94,18 @@
 </a>
 <div id='submenu3' class="collapse sidebar-submenu
 {% if request.path == add_wells_url or request.path == edit_wells_url or request.path == delete_wells %}in{% endif %}">
-  <li class="nav-item{% if request.path == add_wells_url %} active{% endif %}">
-    <a class="nav-link" href="{{add_wells_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == add_wells_url %} active{% endif %}" href="{{add_wells_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Wells</span>
     </a>
   </li>
-  <li class="nav-item{% if request.path == edit_wells_url %} active{% endif %}">
-    <a class="nav-link" href="{{edit_wells_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == edit_wells_url %} active{% endif %}" href="{{edit_wells_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Edit Wells</span>
     </a>
   </li>
-  <li class="nav-item{% if request.path == delete_wells %} active{% endif %}">
-    <a class="nav-link" href="{{delete_wells}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == delete_wells %} active{% endif %}" href="{{delete_wells}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Delete Wells by Aquifer</span>
     </a>
   </li>
@@ -116,13 +116,13 @@
   </div>
 </a>
 <div id='submenu4' class="collapse sidebar-submenu {% if request.path == add_measurements_url or  request.path == update_measurements_url %}in{% endif %}">
-  <li class="nav-item{% if request.path == add_measurements_url %} active{% endif %}">
-    <a class="nav-link" href="{{add_measurements_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == add_measurements_url %} active{% endif %}" href="{{add_measurements_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Measurements</span>
     </a>
   </li>
-  <li class="nav-item{% if request.path == update_aquifer_url %} active{% endif %}">
-    <a class="nav-link" href="{{update_measurements_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == update_aquifer_url %} active{% endif %}" href="{{update_measurements_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Delete Measurements</span>
     </a>
   </li>
@@ -133,13 +133,13 @@
   </div>
 </a>
 <div id='submenu5' class="collapse sidebar-submenu {% if request.path == add_variable_url or  request.path == update_variable_url %}in{% endif %}">
-  <li class="nav-item{% if request.path == add_variable_url %} active{% endif %}">
-    <a class="nav-link" href="{{add_variable_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == add_variable_url %} active{% endif %}" href="{{add_variable_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Add Variable</span>
     </a>
   </li>
-  <li class="nav-item{% if request.path == update_variable_url %} active{% endif %}">
-    <a class="nav-link" href="{{update_variable_url}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == update_variable_url %} active{% endif %}" href="{{update_variable_url}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Edit Variables</span>
     </a>
   </li>
@@ -150,13 +150,13 @@
   </div>
 </a>
 <div id='submenu6' class="collapse sidebar-submenu {% if request.path == delete_rasters or request.path == upload_rasters %}in{% endif %}">
-  <li class="nav-item{% if request.path == upload_rasters %} active{% endif %}">
-    <a class="nav-link" href="{{upload_rasters}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == upload_rasters %} active{% endif %}" href="{{upload_rasters}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Upload Rasters</span>
     </a>
   </li>
-  <li class="nav-item{% if request.path == delete_rasters %} active{% endif %}">
-    <a class="nav-link" href="{{delete_rasters}}" class="list-group-item list-group-item-action bg-dark text-white">
+  <li class="nav-item">
+    <a class="nav-link{% if request.path == delete_rasters %} active{% endif %}" href="{{delete_rasters}}" class="list-group-item list-group-item-action bg-dark text-white">
       <span class="menu-collapsed">Delete Rasters</span>
     </a>
   </li>

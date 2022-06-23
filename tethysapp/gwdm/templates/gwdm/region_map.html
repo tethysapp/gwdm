@@ -60,7 +60,9 @@
 
 {% url 'gwdm:home' as home_url %}
 
-<li class="nav-item{% if request.path == home_url %} active{% endif %}"><a href="{{home_url}}">Go Home</a></li>
+<li class="nav-item">
+    <a class="nav-link{% if request.path == home_url %} active{% endif %}" href="{{home_url}}">Go Home</a>
+</li>
 <h3>Region Name: {{region_name}}</h3>
 {% gizmo region_select %}
 {% gizmo aquifer_select %}
