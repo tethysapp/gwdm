@@ -38,7 +38,7 @@ function addErrorMessage(error, div_id) {
         div_id_string = '#'+div_id;
     }
     $(div_id_string).html(
-        '<span class="exclamation-circle-fill" aria-hidden="true"></span>' +
+        '<i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>' +
         '<span class="sr-only">Error:</span> ' + error
     )
         .removeClass('hidden')
