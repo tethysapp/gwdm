@@ -79,8 +79,8 @@ function appendErrorMessage(message, div_id, message_div_id) {
     $('#'+div_id).remove();
     $(message_div_id_string).append(
         '<div '+ div_id_string +' class="alert alert-danger alert-dissmissible" role="alert">' +
-        '<button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">' +
-        '<span aria-hidden="true">&times;</span></button>' +
+        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">' +
+        '<span aria-hidden="true"></span></button>' +
         '<i class="bi bi-cone-striped" aria-hidden="true"></i>' +
         '<span class="sr-only">Error:</span> ' + message + '</div>'
     )
