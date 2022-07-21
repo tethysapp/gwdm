@@ -89,9 +89,9 @@ var LIBRARY_OBJECT = (function() {
         //scroll back to top
         window.scrollTo(0,0);
         // clear messages
-        $('#message').addClass('hidden');
+        $('#message').addClass('d-none');
         $('#message').empty()
-            .addClass('hidden')
+            .addClass('d-none')
             .removeClass('alert-success')
             .removeClass('alert-info')
             .removeClass('alert-warning')

@@ -5,7 +5,7 @@
 {% block app_content %}
 
 <h3>Upload Rasters</h3>
-<div id="message" class="alert alert-danger hidden" role="alert"></div>
+<div id="message" class="alert alert-danger d-none" role="alert"></div>
 
 {% gizmo region_select %}
 
@@ -40,28 +40,28 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" >
-                <div class="attributes hidden">
+                <div class="attributes d-none">
                     <label for="lat_attributes">
                         Select Lat Variable
                     </label>
                     <select  class="lat_attributes" name="lat_attributes" id="lat_attributes" style="width: 100%">
                     </select>
                 </div>
-                <div class="attributes hidden">
+                <div class="attributes d-none">
                     <label for="lon_attributes">
                         Select Lon Variable
                     </label>
                     <select  class="lon_attributes" name="lon_attributes" id="lon_attributes" style="width: 100%">
                     </select>
                 </div>
-                <div class="attributes hidden">
+                <div class="attributes d-none">
                     <label for="time_attributes">
                         Select Time Variable
                     </label>
                     <select  class="time_attributes" name="time_attributes" id="time_attributes" style="width: 100%">
                     </select>
                 </div>
-                <div class="attributes hidden">
+                <div class="attributes d-none">
                     <label for="display_attributes">
                         Select Display Variable
                     </label>

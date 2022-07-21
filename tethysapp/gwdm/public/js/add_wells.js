@@ -38,8 +38,8 @@ var LIBRARY_OBJECT = (function() {
     reset_form = function(result){
         if("success" in result){
             $("#shp-upload-input").val('');
-            $(".attributes").addClass('hidden');
-            $(".add").addClass('hidden');
+            $(".attributes").addClass('d-none');
+            $(".add").addClass('d-none');
             reset_dropdown();
             addSuccessMessage('Wells Upload Complete!');
         }
@@ -99,7 +99,7 @@ var LIBRARY_OBJECT = (function() {
         xhr.done(function(return_data){ //Reset the form once the data is added successfully
             if("success" in return_data){
                 submit_button.html(submit_button_html);
-                $(".attributes").removeClass('hidden');
+                $(".attributes").removeClass('d-none');
                 $wellsModal.modal('show');
                 var attributes = return_data["attributes"];
                 reset_dropdown();
@@ -127,7 +127,7 @@ var LIBRARY_OBJECT = (function() {
                     $("#aquifer_attributes").append(aquifer_option).trigger('change');
                     $("#meta_attributes").append(meta_option).trigger('change');
                 });
-                $(".add").removeClass('hidden');
+                $(".add").removeClass('d-none');
             }else{
                 addErrorMessage(return_data['error']);
                 submit_button.html(submit_button_html);

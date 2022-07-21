@@ -4,7 +4,7 @@
 
 {% block app_content %}
 <h3>Add an Aquifer</h3>
-<div id="message" class="alert alert-danger hidden" role="alert"></div>
+<div id="message" class="alert alert-danger d-none" role="alert"></div>
 
 {% gizmo region_select %}
 <p class="help-block">Don't see the Region you want? Add one <a href="{% url 'gwdm:add-region' %}">here</a>.</p>
@@ -15,7 +15,7 @@
 </div>
 
 {% gizmo attributes_button %}
-<div class="attributes hidden">
+<div class="attributes d-none">
     <label for="name_attributes">
         Select Aquifer Name Column
     </label>
@@ -23,7 +23,7 @@
     </select>
 </div>
 
-<div class="attributes hidden">
+<div class="attributes hidd-noneden">
     <label for="id_attributes">
         Select Aquifer ID Column
     </label>

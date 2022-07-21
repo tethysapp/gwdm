@@ -40,10 +40,10 @@ var LIBRARY_OBJECT = (function() {
     reset_form = function(result){
         if("success" in result){
             $("#shp-upload-input").val('');
-            $(".attributes").addClass('hidden');
+            $(".attributes").addClass('d-none');
             $("#name_attributes").html('');
             $("#id_attributes").html('');
-            $(".add").addClass('hidden');
+            $(".add").addClass('d-none');
             addSuccessMessage('Aquifer Upload Complete!');
         }
     };
@@ -81,7 +81,7 @@ var LIBRARY_OBJECT = (function() {
         xhr.done(function(return_data){ //Reset the form once the data is added successfully
             if("success" in return_data){
                 submit_button.html(submit_button_html);
-                $(".attributes").removeClass('hidden');
+                $(".attributes").removeClass('d-none');
                 $("#name_attributes").html('');
                 $("#id_attributes").html('');
                 $("#name_attributes").val(null).trigger('change.select2');
@@ -99,7 +99,7 @@ var LIBRARY_OBJECT = (function() {
                     $("#name_attributes").append(name_option);
                     $("#id_attributes").append(id_option);
                 });
-                $(".add").removeClass('hidden');
+                $(".add").removeClass('d-none');
             }else{
                 addErrorMessage(return_data['error']);
             }

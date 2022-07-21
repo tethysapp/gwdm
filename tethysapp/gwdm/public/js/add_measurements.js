@@ -42,8 +42,8 @@ var LIBRARY_OBJECT = (function() {
     reset_form = function(result){
         if("success" in result){
             $("#shp-upload-input").val('');
-            $(".attributes").addClass('hidden');
-            $(".add").addClass('hidden');
+            $(".attributes").addClass('d-none');
+            $(".add").addClass('d-none');
             $("#id_attributes").val('');
             $("#time_attributes").val('');
             $("#value_attributes").val('');
@@ -101,7 +101,7 @@ var LIBRARY_OBJECT = (function() {
         xhr.done(function(return_data){ //Reset the form once the data is added successfully
             if("success" in return_data){
                 submit_button.html(submit_button_html);
-                $(".attributes").removeClass('hidden');
+                $(".attributes").removeClass('d-none');
                 $measurementsModal.modal('show');
                 var attributes = return_data["attributes"];
                 reset_dropdown();
@@ -122,7 +122,7 @@ var LIBRARY_OBJECT = (function() {
                     $("#id_attributes").append(id_option);
                     $("#aquifer_attributes").append(aquifer_option);
                 });
-                $(".add").removeClass('hidden');
+                $(".add").removeClass('d-none');
             }else{
                 addErrorMessage(return_data['error']);
             }
@@ -240,9 +240,9 @@ var LIBRARY_OBJECT = (function() {
                 if("success" in return_data){
                     var is_valid = return_data['is_valid'];
                     if(is_valid===true){
-                        $('.submit-add-measurements').removeClass('hidden');
+                        $('.submit-add-measurements').removeClass('d-none');
                     }else{
-                        $('.submit-add-measurements').addClass('hidden');
+                        $('.submit-add-measurements').addClass('d-none');
                     }
 
                 }else{

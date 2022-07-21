@@ -140,7 +140,7 @@ def region_map(request):
         name="region-text-input",
         placeholder=region_id,
         attributes={"value": region_id, "region-name": region_name},
-        classes="hidden",
+        classes="d-none",
     )
 
     context = {
@@ -383,7 +383,7 @@ def add_aquifer(request):
         style="primary",
         name="submit-add-aquifer",
         attributes={"id": "submit-add-aquifer"},
-        classes="add hidden",
+        classes="add d-none",
     )
 
     attributes_button = Button(

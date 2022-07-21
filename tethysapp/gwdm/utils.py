@@ -635,7 +635,7 @@ def geoserver_text_gizmo() -> Any:
         name="geoserver-text-input",
         placeholder=geoserver_wfs_endpoint,
         attributes={"value": geoserver_wfs_endpoint},
-        classes="hidden",
+        classes="d-none",
     )
 
     return geoserver_text_input
@@ -656,7 +656,7 @@ def thredds_text_gizmo() -> Any:
         name="thredds-text-input",
         placeholder=thredds_endpoint,
         attributes={"value": thredds_endpoint},
-        classes="hidden",
+        classes="d-none",
     )
 
     return thredds_text_input

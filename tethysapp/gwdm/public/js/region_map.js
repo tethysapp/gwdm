@@ -239,7 +239,7 @@ var LIBRARY_OBJECT = (function() {
                 $tsToggle = true;
                 map.closePopup();
                 map.addControl(drawControl);
-                $(".selected_wells").removeClass("hidden");
+                $(".selected_wells").removeClass("d-none");
                 // map.editTools.startPolygon();
                 // map.on('editable:drawing:end', (e) => {
                 //     console.log(e);
@@ -248,7 +248,7 @@ var LIBRARY_OBJECT = (function() {
                 $tsToggle = false
                 drawGroup.clearLayers();
                 drawControl.remove();
-                $(".selected_wells").addClass("hidden");
+                $(".selected_wells").addClass("d-none");
                 $("#variable-select").trigger("change");
             }
         });
@@ -271,16 +271,16 @@ var LIBRARY_OBJECT = (function() {
                 if (featuresJson.features.length > 0) {
                     $modalWarning.modal("show");
                     addWarningMessage("Number of Wells selected are " + featuresJson.features.length + ". Are you sure you want to proceed?")
-                    $getMultWellsBtn.removeClass("hidden");
+                    $getMultWellsBtn.removeClass("d-none");
                 } else {
                     addErrorMessage("Unknown error. Please try again.");
-                    $getMultWellsBtn.addClass("hidden");
+                    $getMultWellsBtn.addClass("d-none");
                 }
             } else {
                 $modalWarning.modal("show");
                 // $(".warning").innerHTML("No Wells within the geometry. Please Try again.");
                 addErrorMessage("No Wells were selected. Please try again.");
-                $getMultWellsBtn.addClass("hidden");
+                $getMultWellsBtn.addClass("d-none");
             }
         }
 
@@ -443,7 +443,7 @@ var LIBRARY_OBJECT = (function() {
     };
 
     view_region = function(region_id, callback){
-        $(".drawdown").addClass("hidden");
+        $(".drawdown").addClass("d-none");
         var defaultParameters = {
             service : 'WFS',
             version : '2.0.0',
@@ -527,7 +527,7 @@ var LIBRARY_OBJECT = (function() {
     };
 
     view_aquifer = function(aquifer_id){
-        $(".drawdown").addClass("hidden");
+        $(".drawdown").addClass("d-none");
 
         var defaultParameters = {
             service : 'WFS',
@@ -974,7 +974,7 @@ var LIBRARY_OBJECT = (function() {
                 $("#leg_max").val(range_max);
                 add_wms(wms_endpoint, range_min, range_max, 'rainbow');
                 if("units" in drawdown_dict){
-                    $(".drawdown").removeClass("hidden");
+                    $(".drawdown").removeClass("d-none");
                 }
                 generate_drawdown_chart(drawdown_dict);
             }
@@ -984,8 +984,8 @@ var LIBRARY_OBJECT = (function() {
     add_wms = function(wmsUrl, range_min, range_max, style){
         // map.removeLayer(tdWmsLayer);
         // map.removeLayer(contourTimeLayer);
-        $('.lcontrol').removeClass('hidden');
-        $('.leaflet-bar-timecontrol').removeClass('hidden');
+        $('.lcontrol').removeClass('d-none');
+        $('.leaflet-bar-timecontrol').removeClass('d-none');
         interpolationGroup.clearLayers();
         contourGroup.clearLayers();
 
@@ -1148,14 +1148,14 @@ var LIBRARY_OBJECT = (function() {
             $("#legend-image").attr("src", '');
             interpolationGroup.clearLayers();
             contourGroup.clearLayers();
-            $('.lcontrol').addClass('hidden');
-            $('.leaflet-bar-timecontrol').addClass('hidden');
+            $('.lcontrol').addClass('d-none');
+            $('.leaflet-bar-timecontrol').addClass('d-none');
             // map.removeLayer(tdWmsLayer);
             // map.removeLayer(contourTimeLayer);
         });
 
         $("#variable-select").change(function(){
-            $(".drawdown").addClass("hidden");
+            $(".drawdown").addClass("d-none");
 
             var aquifer_id = $("#aquifer-select option:selected").val();
             var aquifer_name = $("#aquifer-select option:selected").text();
@@ -1166,8 +1166,8 @@ var LIBRARY_OBJECT = (function() {
             }
             original_map_chart();
             $("#legend-image").attr("src", '');
-            $('.lcontrol').addClass('hidden');
-            $('.leaflet-bar-timecontrol').addClass('hidden');
+            $('.lcontrol').addClass('d-none');
+            $('.leaflet-bar-timecontrol').addClass('d-none');
             // map.removeLayer(tdWmsLayer);
             // map.removeLayer(contourTimeLayer);
             interpolationGroup.clearLayers();

@@ -4,7 +4,7 @@
 
 {% block app_content %}
 <h3>Add Measurements</h3>
-<div id="message" class="alert alert-danger hidden" role="alert"></div>
+<div id="message" class="alert alert-danger d-none" role="alert"></div>
 
 {% gizmo region_select %}
 <p class="help-block">Don't see the Region you want? Add one <a href="{% url 'gwdm:add-region' %}">here</a>.</p>
@@ -37,28 +37,28 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" >
-                <div class="attributes hidden">
+                <div class="attributes d-none">
                     <label for="aquifer_attributes">
                         Select Aquifer Id Column
                     </label>
                     <select  class="aquifer_attributes" name="aquifer_attributes" id="aquifer_attributes" style="width: 100%">
                     </select>
                 </div>
-                <div class="attributes hidden">
+                <div class="attributes d-none">
                     <label for="id_attributes">
                         Select Well Id Column
                     </label>
                     <select  class="id_attributes" name="id_attributes" id="id_attributes" style="width: 100%">
                     </select>
                 </div>
-                <div class="attributes hidden">
+                <div class="attributes d-none">
                     <label for="time_attributes">
                         Select Time Column
                     </label>
                     <select  class="time_attributes" name="time_attributes" id="time_attributes" style="width: 100%">
                     </select>
                 </div>
-                <div class="attributes hidden">
+                <div class="attributes d-none">
                     <label for="value_attributes">
                         Select Measurement Column
                     </label>
@@ -72,7 +72,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success submit-add-measurements hidden" data-bs-dismiss="modal">Add Measurements</button>
+                <button type="button" class="btn btn-success submit-add-measurements d-none" data-bs-dismiss="modal">Add Measurements</button>
             </div>
         </div>
     </div>

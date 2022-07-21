@@ -1,4 +1,4 @@
-.hidden {
+.d-none {
     -webkit-transition: display .5s ease;
     -moz-transition: display .5s ease;
     -o-transition: display .5s ease;

@@ -41,7 +41,7 @@ function addErrorMessage(error, div_id) {
         '<i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>' +
         '<span class="sr-only">Error:</span> ' + error
     )
-        .removeClass('hidden')
+        .removeClass('d-none')
         .removeClass('alert-success')
         .removeClass('alert-info')
         .removeClass('alert-warning')
@@ -84,7 +84,7 @@ function appendErrorMessage(message, div_id, message_div_id) {
         '<i class="bi bi-cone-striped" aria-hidden="true"></i>' +
         '<span class="sr-only">Error:</span> ' + message + '</div>'
     )
-        .removeClass('hidden');
+        .removeClass('d-none');
 }
 function addWarningMessage(error, div_id) {
     var div_id_string = '#message';
@@ -95,7 +95,7 @@ function addWarningMessage(error, div_id) {
         '<i class="bi bi-exclamation-diamond-fill" aria-hidden="true"></i>' +
         '<span class="sr-only">Warning:</span> ' + error
     )
-        .removeClass('hidden')
+        .removeClass('d-none')
         .removeClass('alert-success')
         .removeClass('alert-info')
         .removeClass('alert-danger')
@@ -115,7 +115,7 @@ function appendSuccessMessage(message, div_id) {
         '<br><i class="bi bi-check-circle" aria-hidden="true"></i>' +
         '<span class="sr-only">Sucess:</span> ' + message + '</div>'
     )
-        .removeClass('hidden');
+        .removeClass('d-none');
 }
 
 //send data to database with error messages
@@ -258,7 +258,7 @@ function addInfoMessage(message, div_id) {
         '<i class="bi bi-info-circle-fill" aria-hidden="true"></i>' +
         '<span class="sr-only">Info:</span> ' + message
     )
-        .removeClass('hidden')
+        .removeClass('d-none')
         .removeClass('alert-success')
         .removeClass('alert-danger')
         .removeClass('alert-warning')
@@ -279,9 +279,9 @@ function find_var_index(item,data){
 }
 
 function reset_alert(){
-    $("#message").addClass('hidden');
+    $("#message").addClass('d-none');
     $("#message").empty()
-        .addClass('hidden')
+        .addClass('d-none')
         .removeClass('alert-success')
         .removeClass('alert-info')
         .removeClass('alert-warning')
