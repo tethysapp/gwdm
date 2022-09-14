@@ -22,6 +22,7 @@ resource_files += find_resource_files(
 setup(
     name=release_package,
     version="0.0.2",
+    tethys_version=['3', '4']
     description="Ground Water Data Mapper",
     long_description="",
     keywords="",

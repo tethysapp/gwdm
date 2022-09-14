@@ -35,10 +35,7 @@ from .utils import user_permission_test
 job_manager = app.get_job_manager()
 
 
-@controller(
-    name="home", 
-    url="gwdm",
-)
+@controller(name="home", url="gwdm")
 def home(request):
     """
     Controller for the app home page.
@@ -50,10 +47,7 @@ def home(request):
     return render(request, "gwdm/home.html", context)
 
 
-@controller(
-    name="config", 
-    url="gwdm/config",
-)
+@controller(name="config", url="gwdm/config")
 def config(request):
     """
     Controller for helping setup the app
@@ -78,10 +72,7 @@ def config(request):
     return render(request, "gwdm/config.html", context)
 
 
-@controller(
-    name="metrics",
-    url="gwdm/metrics",
-)
+@controller(name="metrics", url="gwdm/metrics")
 def metrics(request):
     """
     Controller for the app metrics page.
@@ -110,10 +101,7 @@ def metrics(request):
     return render(request, "gwdm/metrics.html", context)
 
 
-@controller(
-    name="region-map",
-    url="gwdm/region-map",
-)
+@controller(name="region-map", url="gwdm/region-map")
 def region_map(request):
     """
     Controller for the Region Map home page.
@@ -158,10 +146,7 @@ def region_map(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="interpolation",
-    url="gwdm/interpolation",
-)
+@controller(name="interpolation", url="gwdm/interpolation")
 def interpolation(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
@@ -299,10 +284,7 @@ def interpolation(request):
     return render(request, "gwdm/interpolation.html", context)
 
 
-@controller(
-    name="add-region",
-    url="gwdm/add-region",
-)
+@controller(name="add-region", url="gwdm/add-region")
 @user_passes_test(user_permission_test)
 def add_region(request):
     """
@@ -331,10 +313,7 @@ def add_region(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="update-region",
-    url="gwdm/update-region",
-)
+@controller(name="update-region", url="gwdm/update-region")
 def update_region(request):
     id_input = TextInput(
         display_text="Region ID",
@@ -361,10 +340,7 @@ def update_region(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="add-aquifer",
-    url="gwdm/add-aquifer",
-)
+@controller(name="add-aquifer", url="gwdm/add-aquifer")
 def add_aquifer(request):
     """
     Controller for add aquifer
@@ -405,10 +381,7 @@ def add_aquifer(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="update-aquifer",
-    url="gwdm/update-aquifer",
-)
+@controller(name="update-aquifer", url="gwdm/update-aquifer")
 def update_aquifer(request):
     id_input = TextInput(
         display_text="Aquifer ID",
@@ -443,10 +416,7 @@ def update_aquifer(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="add-wells",
-    url="gwdm/add-wells",
-)
+@controller(name="add-wells", url="gwdm/add-wells")
 def add_wells(request):
     """
     Controller for add wells
@@ -474,10 +444,7 @@ def add_wells(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="edit-wells",
-    url="gwdm/edit-wells",
-)
+@controller(name="edit-wells", url="gwdm/edit-wells")
 def edit_wells(request):
     geoserver_text_input = geoserver_text_gizmo()
     region_select = get_region_select()
@@ -492,10 +459,7 @@ def edit_wells(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="delete-wells",
-    url="gwdm/delete-wells",
-)
+@controller(name="delete-wells", url="gwdm/delete-wells")
 def delete_wells(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
@@ -517,10 +481,7 @@ def delete_wells(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="upload-rasters",
-    url="gwdm/upload-rasters",
-)
+@controller(name="upload-rasters", url="gwdm/upload-rasters")
 def upload_rasters(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
@@ -561,10 +522,7 @@ def upload_rasters(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="delete-rasters",
-    url="gwdm/delete-rasters",
-)
+@controller(name="delete-rasters", url="gwdm/delete-rasters")
 def delete_rasters(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
@@ -595,10 +553,7 @@ def delete_rasters(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="add-measurements",
-    url="gwdm/add-measurements",
-)
+@controller(name="add-measurements", url="gwdm/add-measurements")
 def add_measurements(request):
     region_select = get_region_select()
 
@@ -631,10 +586,7 @@ def add_measurements(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="update-measurements",
-    url="gwdm/update-measurements",
-)
+@controller(name="update-measurements", url="gwdm/update-measurements")
 def update_measurements(request):
     region_select = get_region_select()
     aquifer_select = get_aquifer_select(None)
@@ -658,10 +610,7 @@ def update_measurements(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="add-variable",
-    url="gwdm/add-variable",
-)
+@controller(name="add-variable", url="gwdm/add-variable")
 def add_variable(request):
     name_error = ""
     units_error = ""
@@ -739,10 +688,7 @@ def add_variable(request):
 
 
 @user_passes_test(user_permission_test)
-@controller(
-    name="update-variable",
-    url="gwdm/update-variable",
-)
+@controller(name="update-variable", url="gwdm/update-variable")
 def update_variable(request):
     id_input = TextInput(
         display_text="Variable ID",
@@ -781,10 +727,7 @@ def update_variable(request):
     return render(request, "gwdm/update_variable.html", context)
 
 
-@controller(
-    name="run-dask",
-    url="gwdm/dask/add/{job_type}",
-)
+@controller(name="run-dask", url="gwdm/dask/add/{job_type}")
 def run_job(request, job_type):
     """
     Controller for the app home page.
@@ -810,10 +753,7 @@ def run_job(request, job_type):
     return HttpResponseRedirect(reverse("gwdm:jobs-table"))
 
 
-@controller(
-    name="jobs-table",
-    url="gwdm/dask/jobs_table",
-)
+@controller(name="jobs-table", url="gwdm/dask/jobs_table")
 def jobs_table(request):
     # Use job manager to get all the jobs.
     jobs = job_manager.list_jobs(order_by="-id", filters=None)
@@ -844,10 +784,7 @@ def jobs_table(request):
     return render(request, "gwdm/jobs_table.html", context)
 
 
-@controller(
-    name="result",
-    url="gwdm/dask/result/{job_id}",
-)
+@controller(name="result", url="gwdm/dask/result/{job_id}")
 def result(request, job_id):
     # Use job manager to get the given job.
     job = job_manager.get_job(job_id=job_id)
@@ -884,10 +821,7 @@ def result(request, job_id):
     return render(request, "gwdm/results.html", context)
 
 
-@controller(
-    name="error_message",
-    url="gwdm/dask/error",
-)
+@controller(name="error_message", url="gwdm/dask/error")
 def error_message(request):
     messages.add_message(request, messages.ERROR, "Invalid Scheduler!")
     return redirect(reverse("gwdm:home"))
