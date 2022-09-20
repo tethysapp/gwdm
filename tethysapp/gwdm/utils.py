@@ -15,7 +15,6 @@ import pandas as pd
 import plotly.graph_objects as go
 import simplejson
 import xarray as xr
-import rioxarray
 from geoalchemy2 import functions as gf2
 from pandarallel import pandarallel
 from shapely import wkt
@@ -208,7 +207,7 @@ def get_region_variables_list(region_id: Union[int, None]) -> List:
         thredds_directory = app.get_custom_setting("gw_thredds_directory")
         thredds_vars = list(
             {
-                int(re.findall("_\d_", _file)[0][1])
+                int(re.findall(r"_\d_", _file)[0][1])
                 for _file in glob.glob(
                     os.path.join(thredds_directory, f"{region_id}", "*", "*.nc")
                 )

@@ -3,19 +3,17 @@ import math
 
 from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse
-from jinja2 import Undefined
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import ObjectDeletedError
-from tethys_sdk.workspaces import app_workspace
-from tethys_sdk.compute import get_scheduler
+# from tethys_sdk.workspaces import app_workspace
+# from tethys_sdk.compute import get_scheduler
 from tethys_sdk.routing import controller
+from .model import Region, Aquifer, Variable, Well
 
 # get job manager for the app
 from .app import Gwdm as app
 
-job_manager = app.get_job_manager()
 from .interpolation_utils import process_interpolation
-from .model import Region, Aquifer, Variable, Well
 from .utils import (
     create_outlier,
     date_format_validator,
@@ -41,6 +39,8 @@ from .utils import (
     process_measurements_file,
     process_raster_attributes,
 )
+
+job_manager = app.get_job_manager()
 
 
 @user_passes_test(user_permission_test)
@@ -77,7 +77,7 @@ def region_tabulator(request):
     data_dict = []
 
     regions = session.query(Region).order_by(Region.id)[
-              (page * size) : ((page + 1) * size)
+              (page * size): ((page + 1) * size)
               ]
 
     for region in regions:
@@ -89,6 +89,7 @@ def region_tabulator(request):
     response = {"data": data_dict, "last_page": last_page}
 
     return JsonResponse(response)
+
 
 @user_passes_test(user_permission_test)
 @controller(name="update-region-ajax", url="gwdm/update-region/update")
@@ -193,7 +194,7 @@ def aquifer_tabulator(request):
     data_dict = []
 
     aquifers = session.query(Aquifer).order_by(Aquifer.id)[
-               (page * size) : ((page + 1) * size)
+               (page * size): ((page + 1) * size)
                ]
 
     for aquifer in aquifers:
@@ -460,7 +461,7 @@ def wells_tabulator(request):
     Ajax controller for the wells tabulator table
     """
     info = request.GET
-    region_id = info.get("region")
+    # region_id = info.get("region")
     aquifer_id = info.get("aquifer")
     page = int(request.GET.get("page"))
     page = page - 1
@@ -472,9 +473,8 @@ def wells_tabulator(request):
     data_dict = []
 
     wells = (
-        session.query(Well)
-            .filter(Well.aquifer_id == aquifer_id)
-            .order_by(Well.id)[(page * size) : ((page + 1) * size)]
+        session.query(Well).filter(Well.aquifer_id == aquifer_id)
+        .order_by(Well.id)[(page * size): ((page + 1) * size)]
     )
 
     for well in wells:
@@ -725,7 +725,7 @@ def variable_tabulator(request):
     data_dict = []
 
     vars = session.query(Variable).order_by(Variable.id)[
-           (page * size) : ((page + 1) * size)
+           (page * size): ((page + 1) * size)
            ]
 
     for var in vars:

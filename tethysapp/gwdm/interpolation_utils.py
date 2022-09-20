@@ -1,4 +1,3 @@
-import calendar
 import copy
 import datetime
 import math
@@ -8,7 +7,6 @@ import tempfile
 import time
 import urllib
 from pathlib import Path
-from timeit import default_timer as timer
 from urllib import request
 from xml.etree import cElementTree as ET
 
@@ -18,7 +16,6 @@ import netCDF4
 import numpy as np
 import pandas as pd
 import xarray
-import rioxarray
 from geoalchemy2 import functions as gf2
 from scipy import interpolate
 from shapely import wkt
@@ -289,10 +286,10 @@ def impute_data(comb_df, well_names, names):
         X = input_to_hidden(
             tx, W_in, b
         )  # setup matrix for multiplication, it is a function
-        I = np.identity(X.shape[1])
-        I[X.shape[1] - 1, X.shape[1] - 1] = 0
-        I[X.shape[1] - 2, X.shape[1] - 2] = 0
-        W_out = np.linalg.lstsq(X.T.dot(X) + lamb_value * I, X.T.dot(ty), rcond=-1)[0]
+        identity = np.identity(X.shape[1])
+        identity[X.shape[1] - 1, X.shape[1] - 1] = 0
+        identity[X.shape[1] - 2, X.shape[1] - 2] = 0
+        W_out = np.linalg.lstsq(X.T.dot(X) + lamb_value * identity, X.T.dot(ty), rcond=-1)[0]
         all_tx_values = all_tx_df.values
         a1 = np.column_stack(np.ones(all_tx_values.shape[0])).T
         all_tx_values = np.hstack((all_tx_values, a1))
@@ -440,11 +437,11 @@ def generate_nc_file(
     temp_dir = tempfile.mkdtemp()
     file_path = os.path.join(temp_dir, file_name)
     h = netCDF4.Dataset(file_path, "w", format="NETCDF4")
-    lat_len = len(grid_y)
-    lon_len = len(grid_x)
+    # lat_len = len(grid_y)
+    # lon_len = len(grid_x)
     time_dim = h.createDimension("time", 0)
-    lat = h.createDimension("lat", lat_len)
-    lon = h.createDimension("lon", lon_len)
+    # lat = h.createDimension("lat", lat_len)
+    # lon = h.createDimension("lon", lon_len)
     latitude = h.createVariable("lat", np.float64, ("lat"))
     longitude = h.createVariable("lon", np.float64, ("lon"))
     time_dim = h.createVariable("time", np.float64, ("time"), fill_value="NaN")
@@ -468,7 +465,7 @@ def generate_nc_file(
         # loop through the data
         values = years_df[measurement].values
 
-        beg_time = timer()  # time the kriging method including variogram fitting
+        # beg_time = timer()  # time the kriging method including variogram fitting
         # fit the model variogram to the experimental variogram
         var_fitted = fit_model_var(
             x_coords, y_coords, values, bbox, raster_extent
@@ -477,7 +474,7 @@ def generate_nc_file(
             var_fitted, x_coords, y_coords, values, grid_x, grid_y
         )  # krig data
         # krig_map.field provides the 2D array of values
-        end_time = timer()
+        # end_time = timer()
         time_dim[time_counter] = measurement.toordinal()
         ts_value[time_counter, :, :] = krig_map.field
         time_counter += 1
@@ -594,7 +591,7 @@ def mlr_interpolation(mlr_dict):
     # pdsi_df = get_thredds_value(SERVER1, LAYER1, bbox)  # pdsi values
     pdsi_df = get_pdsi_df(aquifer_obj)
     soilw_df = get_thredds_value(SERVER2, LAYER2, bbox)  # soilw values
-    
+
     gldas_df = pd.concat([pdsi_df, soilw_df], join="outer", axis=1)
     gldas_df = sat_resample(gldas_df)
     gldas_df, names = sat_rolling_window(YEARS, gldas_df)
@@ -650,7 +647,7 @@ def mlr_interpolation(mlr_dict):
         (imputed_df.index >= f"01-01-{start_date+1}")
         & (imputed_df.index <= f"12-31-{end_date+1}")
     ]
-    
+
     # skip_month = 48  # take data every nth month (skip_months), e.g., 60 = every 5 years
     years_df = imputed_df.iloc[
         ::raster_interval

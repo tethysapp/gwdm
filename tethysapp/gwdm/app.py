@@ -3,7 +3,7 @@ from tethys_sdk.app_settings import (
     SpatialDatasetServiceSetting,
     CustomSetting,
 )
-from tethys_sdk.base import TethysAppBase, url_map_maker
+from tethys_sdk.base import TethysAppBase
 
 
 class Gwdm(TethysAppBase):
@@ -21,7 +21,7 @@ class Gwdm(TethysAppBase):
     tags = ""
     enable_feedback = False
     feedback_emails = []
-    
+
     controller_modules = ['controllers', 'controllers_ajax', ]
 
     def custom_settings(self):

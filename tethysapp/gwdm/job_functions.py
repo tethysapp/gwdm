@@ -1,5 +1,4 @@
 import dask
-import requests
 from .interpolation_utils import process_interpolation
 
 # from .interpolation_utils import process_interpolation
