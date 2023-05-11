@@ -1,7 +1,8 @@
 from setuptools import setup, find_namespace_packages
-from tethys_apps.app_installation import find_resource_files
+from setup_helper import find_all_resource_files
 
 # -- Apps Definition -- #
+namespace = 'tethysapp'
 app_package = "gwdm"
 release_package = "tethysapp-" + app_package
 
@@ -9,25 +10,17 @@ release_package = "tethysapp-" + app_package
 dependencies = []
 
 # -- Get Resource File -- #
-resource_files = find_resource_files(
-    "tethysapp/" + app_package + "/templates", "tethysapp/" + app_package
-)
-resource_files += find_resource_files(
-    "tethysapp/" + app_package + "/public", "tethysapp/" + app_package
-)
-resource_files += find_resource_files(
-    "tethysapp/" + app_package + "/workspaces", "tethysapp/" + app_package
-)
+resource_files = find_all_resource_files(app_package, namespace)
+
 
 setup(
     name=release_package,
     version="0.0.2",
-    tethys_version=['3', '4'],
     description="Ground Water Data Mapper",
-    long_description="",
-    keywords="",
+    long_description="Ground Water Data Mapper",
+    keywords="replace_keywords",
     author="Sarva Pulla",
-    author_email="",
+    author_email="Sarva Pulla_email",
     url="https://github.com/BYU-Hydroinformatics/gwdm",
     license="MIT",
     packages=find_namespace_packages(),
